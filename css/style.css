@@ -199,64 +199,6 @@ footer {
     border-top: 1px solid #222;
 }
 
-/* =========================
-   PRINT STYLES
-   ========================= */
-@media print {
-
-    @page {
-        size: A4;
-        margin: 15mm;
-    }
-
-    * {
-        background: none !important;
-        color: #000 !important;
-        box-shadow: none !important;
-    }
-
-    body {
-        font-family: "Segoe UI", Arial, Helvetica, sans-serif;
-        font-size: 11.5pt;
-        line-height: 1.55;
-    }
-
-    nav,
-    footer,
-    .services-grid,
-    .car-image {
-        display: none !important;
-    }
-
-    header {
-        text-align: center;
-        padding-bottom: 10mm;
-        border: none;
-    }
-
-    h2 {
-        border: none;
-        padding-left: 0;
-        font-size: 16pt;
-    }
-
-    .cars-grid,
-    .contact-content {
-        display: block;
-    }
-
-    .car-card,
-    .contact-card {
-        border: none;
-        margin-bottom: 8mm;
-        page-break-inside: avoid;
-    }
-
-    a::after {
-        content: " (" attr(href) ")";
-        font-size: 9pt;
-    }
-}
 
 /* Адаптив */
 @media (max-width: 767px) {
@@ -264,3 +206,12 @@ footer {
         flex-direction: column;
     }
 }
+
+.service-icon {
+    width: 50px;
+    height: 2px;
+    background-color: #fff;
+    margin: 0 auto 1.5rem;
+    opacity: 0.8;
+}
+
