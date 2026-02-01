@@ -370,3 +370,146 @@ footer {
         grid-template-columns: repeat(3, 1fr);
     }
 }
+
+
+/* =========================
+   PRINT STYLES
+   ========================= */
+@media print {
+
+    /* Размер страницы */
+    @page {
+        size: A4;
+        margin: 15mm;
+    }
+
+    /* Общие сбросы */
+    * {
+        background: transparent !important;
+        color: #000 !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    body {
+        font-family: "Times New Roman", serif;
+        font-size: 12pt;
+        line-height: 1.5;
+    }
+
+    /* Скрываем ненужное */
+    nav,
+    footer,
+    .service-card,
+    .services-grid,
+    .car-image,
+    .service-icon {
+        display: none !important;
+    }
+
+    /* Header */
+    header {
+        border: none;
+        padding: 0 0 10mm 0;
+        text-align: center;
+    }
+
+    header h1 {
+        font-size: 22pt;
+        letter-spacing: 1px;
+        margin-bottom: 5mm;
+    }
+
+    header p {
+        font-size: 11pt;
+        opacity: 1;
+    }
+
+    /* Основной контейнер */
+    .container {
+        max-width: 100%;
+        padding: 0;
+    }
+
+    main {
+        padding: 0;
+    }
+
+    section {
+        margin-bottom: 10mm;
+        page-break-inside: avoid;
+    }
+
+    /* Заголовки */
+    h2 {
+        font-size: 16pt;
+        border: none;
+        padding-left: 0;
+        margin-bottom: 5mm;
+    }
+
+    h3 {
+        font-size: 13pt;
+        margin-bottom: 3mm;
+    }
+
+    /* About */
+    .about-content {
+        border: none;
+        padding: 0;
+    }
+
+    .about-content p,
+    .about-content li {
+        color: #000;
+        font-size: 11pt;
+    }
+
+    /* Cars */
+    .cars-grid {
+        display: block;
+    }
+
+    .car-card {
+        border: none;
+        margin-bottom: 8mm;
+        page-break-inside: avoid;
+    }
+
+    .car-content {
+        padding: 0;
+    }
+
+    .car-content p {
+        font-size: 11pt;
+        color: #000;
+    }
+
+    .price {
+        font-size: 12pt;
+        font-weight: bold;
+        margin-top: 2mm;
+    }
+
+    /* Contacts */
+    .contact-content {
+        display: block;
+    }
+
+    .contact-card {
+        border: none;
+        padding: 0;
+        margin-bottom: 5mm;
+    }
+
+    /* Ссылки */
+    a {
+        text-decoration: none;
+        color: #000;
+    }
+
+    a::after {
+        content: " (" attr(href) ")";
+        font-size: 9pt;
+    }
+}
