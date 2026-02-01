@@ -1,224 +1,141 @@
-/* ===============================
-   Elite Cars — Premium Dark Style
-   =============================== */
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: "Segoe UI", Arial, Helvetica, sans-serif;
-    background-color: #0a0a0a;
-    color: #e0e0e0;
-    line-height: 1.6;
-}
-
-/* Container */
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-}
-
-/* Header */
-header {
-    background-color: #111;
-    padding: 2.5rem 0;
-    border-bottom: 1px solid #222;
-    text-align: center;
-}
-
-header h1 {
-    font-size: 2.5rem;
-    letter-spacing: 3px;
-    font-weight: 300;
-    text-transform: uppercase;
-}
-
-header p {
-    opacity: 0.6;
-}
-
-/* Navigation */
-nav {
-    background-color: #111;
-    border-bottom: 1px solid #222;
-}
-
-nav ul {
-    display: flex;
-    justify-content: center;
-    list-style: none;
-}
-
-nav a {
-    color: #999;
-    padding: 1.2rem 2rem;
-    text-decoration: none;
-    text-transform: uppercase;
-    font-size: 0.85rem;
-    letter-spacing: 1px;
-}
-
-nav a:hover {
-    color: #fff;
-}
-
-/* Main */
-main {
-    padding: 3rem 0;
-}
-
-section {
-    margin-bottom: 4rem;
-}
-
-h2 {
-    font-size: 1.8rem;
-    margin-bottom: 2rem;
-    font-weight: 300;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    border-left: 2px solid #fff;
-    padding-left: 1rem;
-}
-
-/* About */
-.about-content {
-    background-color: #111;
-    border: 1px solid #222;
-    padding: 2rem;
-}
-
-.about-content p,
-.about-content li {
-    color: #999;
-    margin-bottom: 1rem;
-}
-
-/* Cars */
-.cars-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 2rem;
-}
-
-.car-card {
-    background-color: #111;
-    border: 1px solid #222;
-}
-
-.car-image {
-    height: 220px;
-    background: url("images/car.jpg") center / cover no-repeat;
-    border-bottom: 1px solid #222;
-}
-
-.car-content {
-    padding: 1.5rem;
-}
-
-.car-content p {
-    color: #777;
-}
-
-.price {
-    margin-top: 1rem;
-    font-size: 1.3rem;
-}
-
-/* Services */
-.services-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2rem;
-}
-
-.service-card {
-    background-color: #111;
-    border: 1px solid #222;
-    padding: 2rem;
-    text-align: center;
-}
-
-.service-icon {
-    width: 50px;
-    height: 2px;
-    background-color: #fff;
-    margin: 0 auto 1.5rem;
-    opacity: 0.8;
-}
-
-/* Contacts */
-.contact-content {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-}
-
-.contact-card {
-    background-color: #111;
-    border: 1px solid #222;
-    padding: 2rem;
-}
-
-/* Footer */
-footer {
-    border-top: 1px solid #222;
-    padding: 2rem 0;
-    text-align: center;
-    color: #666;
-}
-
-/* ===============================
+/* =========================
    PRINT STYLES
-   =============================== */
+   ========================= */
 @media print {
 
+    /* Размер страницы */
     @page {
         size: A4;
         margin: 15mm;
     }
 
+    /* Общие сбросы */
     * {
-        background: none !important;
+        background: transparent !important;
         color: #000 !important;
-    }
-
-    nav,
-    footer,
-    .services-grid,
-    .car-image {
-        display: none !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
     }
 
     body {
-        font-size: 11.5pt;
+        font-family: "Times New Roman", serif;
+        font-size: 12pt;
+        line-height: 1.5;
     }
 
+    /* Скрываем ненужное */
+    nav,
+    footer,
+    .service-card,
+    .services-grid,
+    .car-image,
+    .service-icon {
+        display: none !important;
+    }
+
+    /* Header */
+    header {
+        border: none;
+        padding: 0 0 10mm 0;
+        text-align: center;
+    }
+
+    header h1 {
+        font-size: 22pt;
+        letter-spacing: 1px;
+        margin-bottom: 5mm;
+    }
+
+    header p {
+        font-size: 11pt;
+        opacity: 1;
+    }
+
+    /* Основной контейнер */
+    .container {
+        max-width: 100%;
+        padding: 0;
+    }
+
+    main {
+        padding: 0;
+    }
+
+    section {
+        margin-bottom: 10mm;
+        page-break-inside: avoid;
+    }
+
+    /* Заголовки */
     h2 {
+        font-size: 16pt;
         border: none;
         padding-left: 0;
+        margin-bottom: 5mm;
     }
 
-    .cars-grid,
+    h3 {
+        font-size: 13pt;
+        margin-bottom: 3mm;
+    }
+
+    /* About */
+    .about-content {
+        border: none;
+        padding: 0;
+    }
+
+    .about-content p,
+    .about-content li {
+        color: #000;
+        font-size: 11pt;
+    }
+
+    /* Cars */
+    .cars-grid {
+        display: block;
+    }
+
+    .car-card {
+        border: none;
+        margin-bottom: 8mm;
+        page-break-inside: avoid;
+    }
+
+    .car-content {
+        padding: 0;
+    }
+
+    .car-content p {
+        font-size: 11pt;
+        color: #000;
+    }
+
+    .price {
+        font-size: 12pt;
+        font-weight: bold;
+        margin-top: 2mm;
+    }
+
+    /* Contacts */
     .contact-content {
         display: block;
     }
 
-    .car-card,
     .contact-card {
         border: none;
-        margin-bottom: 10mm;
-        page-break-inside: avoid;
+        padding: 0;
+        margin-bottom: 5mm;
     }
-}
 
-/* Mobile */
-@media (max-width: 767px) {
-    nav ul {
-        flex-direction: column;
+    /* Ссылки */
+    a {
+        text-decoration: none;
+        color: #000;
+    }
+
+    a::after {
+        content: " (" attr(href) ")";
+        font-size: 9pt;
     }
 }
