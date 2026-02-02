@@ -2,129 +2,184 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Elite Cars</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+    <meta name="description" content="Elite Cars - Продажа элитных автомобилей премиум-класса">
+    <title>Elite Cars - Продажа элитных автомобилей</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-
 <header>
     <div class="container">
         <h1>Elite Cars</h1>
-        <p>Минималистичный автосалон премиум-класса</p>
+        <p>Эксклюзивные автомобили премиум-класса</p>
     </div>
 </header>
 
 <nav>
     <ul>
+        <li><a href="#home">Главная</a></li>
         <li><a href="#about">О нас</a></li>
-        <li><a href="#cars">Автомобили</a></li>
         <li><a href="#services">Услуги</a></li>
-        <li><a href="#contacts">Контакты</a></li>
+        <li><a href="#contact">Контакты</a></li>
     </ul>
 </nav>
 
 <main class="container">
+    <section id="home">
+        <h2>Наша Коллекция</h2>
+        <div class="cars-grid">
+            <div class="car-card">
+                <div class="car-image">
+                    <img src="https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80" alt="Lamborghini Aventador">
+                </div>
+                <div class="car-content">
+                    <h3>Lamborghini Aventador</h3>
+                    <p>V12, 740 л.с., 2023 год. Полный карбоновый обвес, спортивная выхлопная система.</p>
+                    <div class="price">$450,000</div>
+                </div>
+            </div>
+
+            <div class="car-card">
+                <div class="car-image">
+                    <img src="https://images.unsplash.com/photo-1563720360172-67b8f3dce741?w=800&q=80" alt="Rolls-Royce Phantom">
+                </div>
+                <div class="car-content">
+                    <h3>Rolls-Royce Phantom</h3>
+                    <p>V12, 563 л.с., 2024 год. Индивидуальная комплектация, панорамная крыша "Звездное небо".</p>
+                    <div class="price">$520,000</div>
+                </div>
+            </div>
+
+            <div class="car-card">
+                <div class="car-image">
+                    <img src="https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=800&q=80" alt="Ferrari SF90 Stradale">
+                </div>
+                <div class="car-content">
+                    <h3>Ferrari SF90 Stradale</h3>
+                    <p>Hybrid V8, 1000 л.с., 2023 год. Карбон-керамические тормоза, спортивная подвеска.</p>
+                    <div class="price">$625,000</div>
+                </div>
+            </div>
+
+            <div class="car-card">
+                <div class="car-image">
+                    <img src="https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=800&q=80" alt="Bentley Bentayga">
+                </div>
+                <div class="car-content">
+                    <h3>Bentley Bentayga</h3>
+                    <p>W12, 626 л.с., 2024 год. Полный привод, отделка натуральной кожей и деревом.</p>
+                    <div class="price">$285,000</div>
+                </div>
+            </div>
+
+            <div class="car-card">
+                <div class="car-image">
+                    <img src="https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=800&q=80" alt="Porsche Taycan Turbo S">
+                </div>
+                <div class="car-content">
+                    <h3>Porsche Taycan Turbo S</h3>
+                    <p>Electric, 761 л.с., 2024 год. Запас хода 450 км, быстрая зарядка, спортивный пакет.</p>
+                    <div class="price">$195,000</div>
+                </div>
+            </div>
+
+            <div class="car-card">
+                <div class="car-image">
+                    <img src="https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=800&q=80" alt="Mercedes-AMG GT R">
+                </div>
+                <div class="car-content">
+                    <h3>Mercedes-AMG GT R</h3>
+                    <p>V8 Biturbo, 585 л.с., 2023 год. Спортивная подвеска, аэродинамический обвес.</p>
+                    <div class="price">$175,000</div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <section id="about">
         <h2>О нас</h2>
         <div class="about-content">
-            <p>
-                Elite Cars — это автосалон премиальных автомобилей.
-                Мы предлагаем лучшие модели с индивидуальным подходом к каждому клиенту.
-            </p>
+            <p>Elite Cars — ведущий дилер эксклюзивных автомобилей премиум-класса в регионе. Мы специализируемся на продаже суперкаров, люксовых седанов и внедорожников от мировых производителей.</p>
+
+            <h3>Наши преимущества:</h3>
             <ul>
-                <li>Проверенные автомобили</li>
-                <li>Гарантия качества</li>
-                <li>Персональный сервис</li>
+                <li>Официальная гарантия от производителя</li>
+                <li>Полная юридическая чистота автомобилей</li>
+                <li>Индивидуальный подход к каждому клиенту</li>
+                <li>Программы trade-in и кредитования</li>
+                <li>Сервисное обслуживание премиум-класса</li>
             </ul>
-        </div>
-    </section>
 
-    <section id="cars">
-        <h2>Автомобили</h2>
-
-        <div class="cars-grid">
-            <div class="car-card">
-                <div class="car-image">
-                    <img src="images/car1.jpg" alt="Car 1">
-                </div>
-                <div class="car-content">
-                    <h3>Luxury Sedan</h3>
-                    <p>Комфортный седан премиум-класса.</p>
-                    <div class="price">$120 000</div>
-                </div>
-            </div>
-
-            <div class="car-card">
-                <div class="car-image">
-                    <img src="images/car2.jpg" alt="Car 2">
-                </div>
-                <div class="car-content">
-                    <h3>Sport Coupe</h3>
-                    <p>Спортивный автомобиль с характером.</p>
-                    <div class="price">$145 000</div>
-                </div>
-            </div>
-
-            <div class="car-card">
-                <div class="car-image">
-                    <img src="images/car3.jpg" alt="Car 3">
-                </div>
-                <div class="car-content">
-                    <h3>Luxury SUV</h3>
-                    <p>Просторный и мощный внедорожник.</p>
-                    <div class="price">$160 000</div>
-                </div>
-            </div>
+            <p>Наша команда профессионалов с многолетним опытом поможет вам выбрать автомобиль мечты и обеспечит полное сопровождение сделки.</p>
         </div>
     </section>
 
     <section id="services">
-        <h2>Услуги</h2>
-
+        <h2>Наши Услуги</h2>
         <div class="services-grid">
             <div class="service-card">
-                <div class="service-icon">🚗</div>
-                <h3>Продажа авто</h3>
-                <p>Продажа новых и подержанных автомобилей.</p>
+                <div class="service-icon">🔍</div>
+                <h3>Подбор автомобиля</h3>
+                <p>Поможем найти идеальный автомобиль под ваши требования и бюджет</p>
+            </div>
+
+            <div class="service-card">
+                <div class="service-icon">💼</div>
+                <h3>Trade-in</h3>
+                <p>Обмен вашего текущего автомобиля на новый с выгодными условиями</p>
             </div>
 
             <div class="service-card">
                 <div class="service-icon">🔧</div>
                 <h3>Сервис</h3>
-                <p>Техническое обслуживание и диагностика.</p>
+                <p>Полный спектр услуг по обслуживанию и ремонту премиум-автомобилей</p>
             </div>
 
             <div class="service-card">
-                <div class="service-icon">💼</div>
-                <h3>Консультации</h3>
-                <p>Помощь в выборе автомобиля и оформлении.</p>
+                <div class="service-icon">📋</div>
+                <h3>Страхование</h3>
+                <p>Оформление КАСКО и ОСАГО на специальных условиях</p>
+            </div>
+
+            <div class="service-card">
+                <div class="service-icon">💳</div>
+                <h3>Кредитование</h3>
+                <p>Индивидуальные программы автокредитования от ведущих банков</p>
+            </div>
+
+            <div class="service-card">
+                <div class="service-icon">✈️</div>
+                <h3>Доставка</h3>
+                <p>Организуем доставку автомобиля в любую точку мира</p>
             </div>
         </div>
     </section>
 
-    <section id="contacts">
+    <section id="contact">
         <h2>Контакты</h2>
-
         <div class="contact-content">
             <div class="contact-card">
                 <h3>Адрес</h3>
-                <p>Москва, Россия</p>
+                <p>г. Алматы</p>
+                <p>пр. Аль-Фараби, 15</p>
+                <p>БЦ "Elite Tower", 5 этаж</p>
             </div>
 
             <div class="contact-card">
                 <h3>Телефон</h3>
-                <p>+7 000 000 00 00</p>
+                <p>+7 (727) 123-45-67</p>
+                <p>+7 (777) 999-88-77</p>
+                <p>Ежедневно: 10:00 - 20:00</p>
             </div>
 
             <div class="contact-card">
                 <h3>Email</h3>
-                <p>info@elitecars.ru</p>
+                <p>info@elitecars.kz</p>
+                <p>sales@elitecars.kz</p>
+                <p>service@elitecars.kz</p>
             </div>
         </div>
     </section>
-
 </main>
 
 <footer>
@@ -132,25 +187,34 @@
         <div class="footer-content">
             <div class="footer-section">
                 <h3>Elite Cars</h3>
-                <p>Премиальные автомобили и высокий уровень сервиса.</p>
+                <p>Эксклюзивные автомобили премиум-класса. Ваш путь к совершенству начинается здесь.</p>
             </div>
 
             <div class="footer-section">
-                <h3>Навигация</h3>
+                <h3>Быстрые ссылки</h3>
                 <ul>
-                    <li><a href="#about">О нас</a></li>
-                    <li><a href="#cars">Автомобили</a></li>
+                    <li><a href="#home">Каталог</a></li>
+                    <li><a href="#about">О компании</a></li>
                     <li><a href="#services">Услуги</a></li>
-                    <li><a href="#contacts">Контакты</a></li>
+                    <li><a href="#contact">Контакты</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Социальные сети</h3>
+                <ul>
+                    <li><a href="#">Instagram</a></li>
+                    <li><a href="#">Facebook</a></li>
+                    <li><a href="#">YouTube</a></li>
+                    <li><a href="#">WhatsApp</a></li>
                 </ul>
             </div>
         </div>
 
         <div class="footer-bottom">
-            © 2026 Elite Cars. Все права защищены.
+            <p>&copy; 2024 Elite Cars. Все права защищены.</p>
         </div>
     </div>
 </footer>
-
 </body>
 </html>
