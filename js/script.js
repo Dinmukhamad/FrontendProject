@@ -1,6 +1,6 @@
 // ============================================
 // PRESTIGE MOTORS - INTERACTIVE FEATURES
-// Modern JavaScript Implementation
+// Single Page Application (SPA) Version
 // ============================================
 
 (function() {
@@ -15,19 +15,104 @@
         // Initialize all features
         initScrollEffects();
         initNavigationEffects();
+        initSinglePageNavigation();
         initCarCardInteractions();
         initContactForm();
         initImageLazyLoading();
         initTypewriterEffect();
-        initSmoothScrolling();
         initMobileNavigation();
+    }
+
+    // ============================================
+    // SINGLE PAGE NAVIGATION
+    // ============================================
+    function initSinglePageNavigation() {
+        const navLinks = document.querySelectorAll('.nav-links a, a[href^="#"]');
+        const header = document.querySelector('header');
+        const headerHeight = header ? header.offsetHeight : 0;
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                
+                // Only handle hash links
+                if (href && href.startsWith('#')) {
+                    e.preventDefault();
+                    
+                    const targetId = href.substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    
+                    if (targetElement) {
+                        // Calculate position with offset for fixed header
+                        const targetPosition = targetElement.offsetTop - headerHeight;
+                        
+                        // Smooth scroll to target
+                        window.scrollTo({
+                            top: targetPosition,
+                            behavior: 'smooth'
+                        });
+                        
+                        // Update active navigation state
+                        updateActiveNavLink(targetId);
+                        
+                        // Close mobile menu if open
+                        const navLinksContainer = document.querySelector('.nav-links');
+                        if (navLinksContainer && navLinksContainer.classList.contains('mobile-open')) {
+                            navLinksContainer.classList.remove('mobile-open');
+                            const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+                            if (mobileMenuBtn) {
+                                mobileMenuBtn.textContent = '☰';
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+        // Update active link on scroll
+        let ticking = false;
+        window.addEventListener('scroll', function() {
+            if (!ticking) {
+                window.requestAnimationFrame(function() {
+                    updateActiveNavOnScroll();
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+    }
+
+    function updateActiveNavLink(activeId) {
+        const navLinks = document.querySelectorAll('.nav-links a');
+        navLinks.forEach(link => {
+            const href = link.getAttribute('href');
+            if (href === `#${activeId}`) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+    }
+
+    function updateActiveNavOnScroll() {
+        const sections = document.querySelectorAll('section[id]');
+        const scrollPosition = window.scrollY + 150;
+
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            const sectionHeight = section.offsetHeight;
+            const sectionId = section.getAttribute('id');
+
+            if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+                updateActiveNavLink(sectionId);
+            }
+        });
     }
 
     // ============================================
     // SCROLL EFFECTS & ANIMATIONS
     // ============================================
     function initScrollEffects() {
-        // Header background opacity on scroll
         let lastScrollTop = 0;
         const header = document.querySelector('header');
         
@@ -43,8 +128,6 @@
                 header.style.backdropFilter = 'blur(10px)';
             }
 
-            // Scroll direction detection for future enhancements
-            const isScrollingDown = scrollTop > lastScrollTop;
             lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
         });
 
@@ -84,15 +167,6 @@
                 this.style.transform = 'translateY(0)';
             });
         });
-
-        // Active page highlighting
-        const currentPage = window.location.pathname.split('/').pop();
-        navLinks.forEach(link => {
-            const linkPage = link.getAttribute('href');
-            if (linkPage === currentPage || (currentPage === '' && linkPage === 'index.html')) {
-                link.classList.add('active');
-            }
-        });
     }
 
     // ============================================
@@ -103,7 +177,6 @@
         
         carCards.forEach(card => {
             const img = card.querySelector('.car-image');
-            const content = card.querySelector('.car-content');
             
             // Hover effects
             card.addEventListener('mouseenter', function() {
@@ -127,7 +200,13 @@
             // Click interaction for "View Details" buttons
             const detailBtn = card.querySelector('.btn');
             if (detailBtn) {
+                const originalHref = detailBtn.getAttribute('href');
                 detailBtn.addEventListener('click', function(e) {
+                    // If it's the contact link, let the smooth scroll handle it
+                    if (originalHref && originalHref.startsWith('#')) {
+                        return; // Let the smooth scroll function handle it
+                    }
+                    
                     e.preventDefault();
                     const carName = card.querySelector('h3').textContent;
                     showCarDetails(carName);
@@ -137,26 +216,28 @@
     }
 
     function showCarDetails(carName) {
-        // Create modal for car details
-        const modal = createModal(
-            `${carName} Details`,
-            `
-                <div class="car-details">
-                    <h3>${carName}</h3>
-                    <p>Thank you for your interest in the ${carName}. Our luxury vehicle specialists will be happy to provide you with detailed information, arrange a private viewing, or schedule a test drive.</p>
-                    <div class="detail-actions">
-                        <button class="btn btn-primary" onclick="window.location.href='contact.html'">Contact Us</button>
-                        <button class="btn" onclick="closeModal()">Close</button>
-                    </div>
-                </div>
-            `
-        );
-        document.body.appendChild(modal);
-        
-        // Add close functionality
-        window.closeModal = function() {
-            document.body.removeChild(modal);
-        };
+        // Scroll to contact section instead of showing modal
+        const contactSection = document.getElementById('contact');
+        if (contactSection) {
+            const header = document.querySelector('header');
+            const headerHeight = header ? header.offsetHeight : 0;
+            const targetPosition = contactSection.offsetTop - headerHeight;
+            
+            window.scrollTo({
+                top: targetPosition,
+                behavior: 'smooth'
+            });
+            
+            // Pre-fill the vehicle interest field
+            setTimeout(() => {
+                const interestField = document.getElementById('interest');
+                if (interestField) {
+                    interestField.value = carName;
+                    interestField.focus();
+                    showNotification(`Interested in ${carName}? Fill out the form below!`, 'info');
+                }
+            }, 800);
+        }
     }
 
     // ============================================
@@ -212,7 +293,7 @@
                 break;
             case 'tel':
                 const phoneRegex = /^[\+]?[1-9][\d\s\-\(\)]{7,}$/;
-                isValid = !value || phoneRegex.test(value); // Phone is optional
+                isValid = !value || phoneRegex.test(value);
                 break;
             case 'text':
             case 'textarea':
@@ -249,7 +330,7 @@
         submitBtn.textContent = 'Sending...';
         submitBtn.disabled = true;
         
-        // Simulate form submission (replace with actual endpoint)
+        // Simulate form submission
         setTimeout(() => {
             showNotification('Message sent successfully! We will contact you shortly.', 'success');
             form.reset();
@@ -296,44 +377,19 @@
                 i++;
                 setTimeout(typeWriter, 100);
             } else {
-                // Remove cursor after typing is complete
                 setTimeout(() => {
                     heroTitle.style.borderRight = 'none';
                 }, 1000);
             }
         }
         
-        // Start typewriter effect after a delay
         setTimeout(typeWriter, 1000);
-    }
-
-    // ============================================
-    // SMOOTH SCROLLING
-    // ============================================
-    function initSmoothScrolling() {
-        const links = document.querySelectorAll('a[href^="#"]');
-        
-        links.forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const targetId = this.getAttribute('href');
-                const targetElement = document.querySelector(targetId);
-                
-                if (targetElement) {
-                    targetElement.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
     }
 
     // ============================================
     // MOBILE NAVIGATION
     // ============================================
     function initMobileNavigation() {
-        // Create mobile menu button if it doesn't exist
         const nav = document.querySelector('nav');
         const navLinks = document.querySelector('.nav-links');
         
@@ -352,36 +408,22 @@
                 });
             }
         }
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                navLinks.classList.remove('mobile-open');
+                const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+                if (mobileMenuBtn) {
+                    mobileMenuBtn.textContent = '☰';
+                }
+            }
+        });
     }
 
     // ============================================
     // UTILITY FUNCTIONS
     // ============================================
-    function createModal(title, content) {
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>${title}</h2>
-                    <span class="close" onclick="closeModal()">&times;</span>
-                </div>
-                <div class="modal-body">
-                    ${content}
-                </div>
-            </div>
-        `;
-        
-        // Close modal when clicking outside
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                closeModal();
-            }
-        });
-        
-        return modal;
-    }
-
     function showNotification(message, type = 'info') {
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
@@ -389,12 +431,10 @@
         
         document.body.appendChild(notification);
         
-        // Trigger animation
         setTimeout(() => {
             notification.classList.add('show');
         }, 100);
         
-        // Remove notification after 5 seconds
         setTimeout(() => {
             notification.classList.remove('show');
             setTimeout(() => {
@@ -413,11 +453,10 @@
         }
     }
 
-    // Log performance after page load
     window.addEventListener('load', logPerformance);
 
     // ============================================
-    // ADDITIONAL CSS STYLES VIA JAVASCRIPT
+    // DYNAMIC STYLES
     // ============================================
     function addDynamicStyles() {
         const style = document.createElement('style');
@@ -438,6 +477,11 @@
                 }
             }
             
+            /* Smooth scroll behavior */
+            html {
+                scroll-behavior: smooth;
+            }
+            
             /* Form styling enhancements */
             .form-group.focused label {
                 color: #c9a24d;
@@ -449,54 +493,6 @@
             .form-group textarea.error {
                 border-color: #ff6b6b;
                 box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.2);
-            }
-            
-            /* Modal styles */
-            .modal {
-                display: flex;
-                position: fixed;
-                z-index: 2000;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(0,0,0,0.8);
-                align-items: center;
-                justify-content: center;
-            }
-            
-            .modal-content {
-                background-color: #1a1a1a;
-                margin: auto;
-                padding: 0;
-                border: 1px solid #c9a24d;
-                width: 90%;
-                max-width: 500px;
-                border-radius: 8px;
-                color: #f5f5f5;
-            }
-            
-            .modal-header {
-                padding: 20px;
-                border-bottom: 1px solid #2a2a2a;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-            
-            .modal-body {
-                padding: 20px;
-            }
-            
-            .close {
-                color: #aaa;
-                font-size: 28px;
-                font-weight: bold;
-                cursor: pointer;
-            }
-            
-            .close:hover {
-                color: #c9a24d;
             }
             
             /* Notification styles */
@@ -511,6 +507,7 @@
                 z-index: 3000;
                 transform: translateX(400px);
                 transition: transform 0.3s ease;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             }
             
             .notification.show {
@@ -525,6 +522,10 @@
                 background-color: #f44336;
             }
             
+            .notification.info {
+                background-color: #c9a24d;
+            }
+            
             /* Mobile menu styles */
             @media (max-width: 768px) {
                 .mobile-menu-btn {
@@ -534,6 +535,7 @@
                     color: #c9a24d;
                     font-size: 1.5rem;
                     cursor: pointer;
+                    padding: 0.5rem;
                 }
                 
                 .nav-links {
@@ -555,12 +557,16 @@
                     opacity: 1;
                     visibility: visible;
                 }
+                
+                .nav-links li {
+                    width: 100%;
+                    text-align: center;
+                }
             }
         `;
         document.head.appendChild(style);
     }
 
-    // Add dynamic styles when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', addDynamicStyles);
     } else {
