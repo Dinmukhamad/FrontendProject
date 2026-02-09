@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Premium luxury car dealership offering the finest selection of high-end vehicles including BMW, Mercedes-Benz, Porsche, Audi, Lamborghini, and Rolls-Royce">
   <title>PRESTIGE MOTORS - Luxury Car Dealership</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
 </head>
 <body>
   <!-- HEADER & NAVIGATION -->
@@ -16,9 +17,33 @@
         <li><a href="#home" class="active">Home</a></li>
         <li><a href="#cars">Cars</a></li>
         <li><a href="#contact">Contact</a></li>
+        {% if current_user.is_authenticated %}
+          <li><a href="{{ url_for('profile') }}">Profile</a></li>
+          {% if current_user.is_admin %}
+            <li><a href="{{ url_for('admin_dashboard') }}">Admin</a></li>
+          {% endif %}
+          <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        {% else %}
+          <li><a href="{{ url_for('login') }}">Login</a></li>
+          <li><a href="{{ url_for('register') }}">Register</a></li>
+        {% endif %}
       </ul>
     </nav>
   </header>
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+          <div class="flash-message flash-{{ category }}">
+            {{ message }}
+            <button class="close-flash" onclick="this.parentElement.remove()">×</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
 
   <!-- MAIN CONTENT -->
   <main>
@@ -52,67 +77,27 @@
 
         <!-- CAR GRID -->
         <div class="cars-grid">
-
-          <!-- Car Card 1: BMW M5 Competition -->
+          {% for car in cars %}
           <article class="car-card">
-            <img src="https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&h=600&fit=crop" alt="BMW M5 Competition - Luxury Sports Sedan" class="car-image">
+            {% if current_user.is_authenticated %}
+            <button class="favorite-btn" onclick="toggleFavorite({{ car.id }})">
+              <span class="heart-icon">♡</span>
+            </button>
+            {% endif %}
+            
+            <img src="{{ car.image_url }}" alt="{{ car.name }}" class="car-image">
             <div class="car-content">
-              <h3>BMW M5 Competition</h3>
-              <p>The ultimate expression of performance luxury. With 625 horsepower and cutting-edge technology, this sedan redefines the boundaries of speed and sophistication.</p>
-              <a href="#contact" class="btn">View Details</a>
+              <h3>{{ car.name }}</h3>
+              <p class="car-price">{{ car.price|currency }}</p>
+              <div class="car-specs">
+                <span><strong>Year:</strong> {{ car.year }}</span>
+                <span><strong>HP:</strong> {{ car.horsepower }}</span>
+              </div>
+              <p>{{ car.description }}</p>
+              <a href="#contact" class="btn" onclick="setVehicleInterest('{{ car.name }}')">Inquire Now</a>
             </div>
           </article>
-
-          <!-- Car Card 2: Mercedes-Benz S-Class -->
-          <article class="car-card">
-            <img src="https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=800&h=600&fit=crop" alt="Mercedes-Benz S-Class - Flagship Luxury Sedan" class="car-image">
-            <div class="car-content">
-              <h3>Mercedes-Benz S-Class</h3>
-              <p>The pinnacle of automotive luxury and innovation. Experience unparalleled comfort, advanced technology, and timeless elegance in every journey.</p>
-              <a href="#contact" class="btn">View Details</a>
-            </div>
-          </article>
-
-          <!-- Car Card 3: Porsche 911 Turbo S -->
-          <article class="car-card">
-            <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop" alt="Porsche 911 Turbo S - Iconic Sports Car" class="car-image">
-            <div class="car-content">
-              <h3>Porsche 911 Turbo S</h3>
-              <p>An icon perfected through generations. This masterpiece delivers breathtaking performance with 640 horsepower while maintaining the legendary 911 silhouette.</p>
-              <a href="#contact" class="btn">View Details</a>
-            </div>
-          </article>
-
-          <!-- Car Card 4: Audi RS7 -->
-          <article class="car-card">
-            <img src="https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&h=600&fit=crop" alt="Audi RS7 - Performance Sportback" class="car-image">
-            <div class="car-content">
-              <h3>Audi RS7 Sportback</h3>
-              <p>Where aggressive design meets refined luxury. The RS7 combines a powerful twin-turbo V8 with sophisticated Quattro all-wheel drive for uncompromising performance.</p>
-              <a href="#contact" class="btn">View Details</a>
-            </div>
-          </article>
-
-          <!-- Car Card 5: Lamborghini Huracán EVO -->
-          <article class="car-card">
-            <img src="https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&h=600&fit=crop" alt="Lamborghini Huracán EVO - Italian Supercar" class="car-image">
-            <div class="car-content">
-              <h3>Lamborghini Huracán EVO</h3>
-              <p>Italian passion incarnate. The Huracán EVO delivers visceral supercar thrills with its naturally aspirated V10 engine and razor-sharp handling dynamics.</p>
-              <a href="#contact" class="btn">View Details</a>
-            </div>
-          </article>
-
-          <!-- Car Card 6: Rolls-Royce Ghost -->
-          <article class="car-card">
-            <img src="https://images.unsplash.com/photo-1563720360172-67b8f3dce741?w=800&h=600&fit=crop" alt="Rolls-Royce Ghost - Ultra-Luxury Sedan" class="car-image">
-            <div class="car-content">
-              <h3>Rolls-Royce Ghost</h3>
-              <p>The epitome of luxury motoring. Handcrafted to perfection, the Ghost offers an unparalleled sanctuary of tranquility, bespoke craftsmanship, and effortless power.</p>
-              <a href="#contact" class="btn">View Details</a>
-            </div>
-          </article>
-
+          {% endfor %}
         </div>
       </div>
     </section>
@@ -162,15 +147,15 @@
           <!-- CONTACT FORM -->
           <div class="contact-form-wrapper">
             <h2>Send Us A Message</h2>
-            <form class="contact-form" action="#" method="post">
+            <form class="contact-form" action="{{ url_for('submit_contact') }}" method="POST">
               
               <div class="form-group">
-                <label for="name">Full Name</label>
+                <label for="name">Full Name *</label>
                 <input type="text" id="name" name="name" placeholder="John Doe" required>
               </div>
 
               <div class="form-group">
-                <label for="email">Email Address</label>
+                <label for="email">Email Address *</label>
                 <input type="email" id="email" name="email" placeholder="john@example.com" required>
               </div>
 
@@ -185,7 +170,7 @@
               </div>
 
               <div class="form-group">
-                <label for="message">Message</label>
+                <label for="message">Message *</label>
                 <textarea id="message" name="message" placeholder="Tell us about your requirements and preferences..." required></textarea>
               </div>
 
@@ -202,6 +187,69 @@
   <footer>
     <p>&copy; 2026 <span class="gold-text">Prestige Motors</span>. All Rights Reserved.</p>
   </footer>
-  <script src="./js/script.js"></script>
+  
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  <script>
+    // Favorite toggle function
+    function toggleFavorite(carId) {
+      fetch(`/api/favorite/toggle/${carId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        const btn = event.target.closest('.favorite-btn');
+        const heart = btn.querySelector('.heart-icon');
+        
+        if (data.status === 'added') {
+          heart.textContent = '♥';
+          heart.style.color = '#c9a24d';
+          showNotification('Added to favorites!', 'success');
+        } else {
+          heart.textContent = '♡';
+          heart.style.color = '#c9a24d';
+          showNotification('Removed from favorites', 'info');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showNotification('Please login to add favorites', 'error');
+      });
+    }
+
+    // Pre-fill vehicle interest
+    function setVehicleInterest(carName) {
+      setTimeout(() => {
+        const interestField = document.getElementById('interest');
+        if (interestField) {
+          interestField.value = carName;
+        }
+      }, 500);
+    }
+
+    // Notification function
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `notification notification-${type}`;
+      notification.textContent = message;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.classList.add('show');
+      }, 100);
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+          if (notification.parentElement) {
+            document.body.removeChild(notification);
+          }
+        }, 300);
+      }, 3000);
+    }
+  </script>
 </body>
 </html>
