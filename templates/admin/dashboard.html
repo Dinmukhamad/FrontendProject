@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - PRESTIGE MOTORS</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .admin-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+    .admin-header h1 {
+      color: var(--color-gold);
+    }
+    .admin-nav {
+      display: flex;
+      gap: 15px;
+    }
+    .admin-nav a {
+      padding: 10px 20px;
+      background: var(--color-dark-gray);
+      border: 1px solid var(--color-medium-gray);
+      color: var(--color-off-white);
+      transition: all 0.3s ease;
+    }
+    .admin-nav a:hover, .admin-nav a.active {
+      border-color: var(--color-gold);
+      color: var(--color-gold);
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    .stat-card {
+      background: var(--color-dark-gray);
+      border: 1px solid var(--color-medium-gray);
+      padding: 30px;
+      text-align: center;
+    }
+    .stat-card h3 {
+      color: var(--color-gold);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+    .stat-card .stat-number {
+      font-size: 3rem;
+      color: var(--color-white);
+      font-family: var(--font-heading);
+    }
+    .recent-inquiries {
+      background: var(--color-dark-gray);
+      border: 1px solid var(--color-medium-gray);
+      padding: 30px;
+    }
+    .recent-inquiries h2 {
+      color: var(--color-gold);
+      margin-bottom: 20px;
+    }
+    .inquiry-list {
+      list-style: none;
+    }
+    .inquiry-item {
+      padding: 15px 0;
+      border-bottom: 1px solid var(--color-medium-gray);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .inquiry-item:last-child {
+      border-bottom: none;
+    }
+    .inquiry-info h4 {
+      color: var(--color-white);
+      margin-bottom: 5px;
+    }
+    .inquiry-info p {
+      font-size: 0.9rem;
+      margin: 0;
+    }
+    .inquiry-date {
+      color: var(--color-light-gray);
+      font-size: 0.85rem;
+    }
+    .status-badge {
+      padding: 5px 10px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .status-new {
+      background: rgba(201, 162, 77, 0.2);
+      color: var(--color-gold);
+    }
+    .status-contacted {
+      background: rgba(100, 200, 100, 0.2);
+      color: #64c864;
+    }
+    .status-closed {
+      background: rgba(150, 150, 150, 0.2);
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="{{ url_for('index') }}" class="logo">PRESTIGE</a>
+      <ul class="nav-links">
+        <li><a href="{{ url_for('index') }}">Home</a></li>
+        <li><a href="{{ url_for('admin_dashboard') }}" class="active">Admin</a></li>
+        <li><a href="{{ url_for('profile') }}">Profile</a></li>
+        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+          <div class="flash-message flash-{{ category }}">
+            {{ message }}
+            <button class="close-flash" onclick="this.parentElement.remove()">×</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <main>
+    <div class="admin-container">
+      <div class="admin-header">
+        <h1>Admin Dashboard</h1>
+        <div class="admin-nav">
+          <a href="{{ url_for('admin_dashboard') }}" class="active">Dashboard</a>
+          <a href="{{ url_for('admin_cars') }}">Cars</a>
+          <a href="{{ url_for('admin_inquiries') }}">Inquiries</a>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>Total Users</h3>
+          <div class="stat-number">{{ total_users }}</div>
+        </div>
+        <div class="stat-card">
+          <h3>Total Cars</h3>
+          <div class="stat-number">{{ total_cars }}</div>
+        </div>
+        <div class="stat-card">
+          <h3>Total Inquiries</h3>
+          <div class="stat-number">{{ total_inquiries }}</div>
+        </div>
+      </div>
+
+      <div class="recent-inquiries">
+        <h2>Recent Inquiries</h2>
+        {% if recent_inquiries %}
+        <ul class="inquiry-list">
+          {% for inquiry in recent_inquiries %}
+          <li class="inquiry-item">
+            <div class="inquiry-info">
+              <h4>{{ inquiry.full_name }}</h4>
+              <p>{{ inquiry.email }} {% if inquiry.vehicle_interest %} - {{ inquiry.vehicle_interest }}{% endif %}</p>
+            </div>
+            <div>
+              <span class="status-badge status-{{ inquiry.status }}">{{ inquiry.status }}</span>
+              <span class="inquiry-date">{{ inquiry.created_at.strftime('%b %d, %Y') }}</span>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p>No inquiries yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 <span class="gold-text">Prestige Motors</span>. All Rights Reserved.</p>
+  </footer>
+</body>
+</html>

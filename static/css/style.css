@@ -568,6 +568,197 @@ footer .gold-text {
 }
 
 /* ============================================
+   FLASH MESSAGES
+   ============================================ */
+.flash-messages {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 9999;
+  max-width: 400px;
+}
+
+.flash-message {
+  padding: 15px 40px 15px 20px;
+  margin-bottom: 10px;
+  border: 1px solid var(--color-medium-gray);
+  background-color: var(--color-dark-gray);
+  color: var(--color-off-white);
+  position: relative;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.flash-success {
+  border-color: #64c864;
+  background-color: rgba(100, 200, 100, 0.1);
+}
+
+.flash-danger {
+  border-color: #e74c3c;
+  background-color: rgba(231, 76, 60, 0.1);
+}
+
+.flash-info {
+  border-color: var(--color-gold);
+  background-color: rgba(201, 162, 77, 0.1);
+}
+
+.close-flash {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--color-light-gray);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0 5px;
+}
+
+.close-flash:hover {
+  color: var(--color-white);
+}
+
+/* ============================================
+   FAVORITE BUTTON
+   ============================================ */
+.favorite-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(0, 0, 0, 0.7);
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 10;
+  transition: all var(--transition-medium);
+}
+
+.favorite-btn:hover {
+  background: rgba(0, 0, 0, 0.9);
+  transform: scale(1.1);
+}
+
+.heart-icon {
+  font-size: 1.4rem;
+  color: var(--color-gold);
+}
+
+/* ============================================
+   CAR PRICE & SPECS
+   ============================================ */
+.car-price {
+  font-size: 1.4rem;
+  color: var(--color-gold) !important;
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+}
+
+.car-specs {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+  padding: var(--spacing-sm) 0;
+  border-top: 1px solid var(--color-medium-gray);
+  border-bottom: 1px solid var(--color-medium-gray);
+}
+
+.car-specs span {
+  font-size: 0.9rem;
+  color: var(--color-light-gray);
+}
+
+.car-specs strong {
+  color: var(--color-gold);
+}
+
+/* ============================================
+   NOTIFICATIONS
+   ============================================ */
+.notification {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 15px 25px;
+  background-color: var(--color-dark-gray);
+  border: 1px solid var(--color-medium-gray);
+  color: var(--color-off-white);
+  transform: translateX(150%);
+  transition: transform 0.3s ease;
+  z-index: 9999;
+}
+
+.notification.show {
+  transform: translateX(0);
+}
+
+.notification-success {
+  border-color: #64c864;
+}
+
+.notification-error {
+  border-color: #e74c3c;
+}
+
+.notification-info {
+  border-color: var(--color-gold);
+}
+
+/* ============================================
+   CART BADGE
+   ============================================ */
+.cart-link {
+  position: relative;
+}
+
+.cart-badge {
+  display: none;
+  position: absolute;
+  top: -8px;
+  right: -12px;
+  background-color: var(--color-gold);
+  color: var(--color-black);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* ============================================
+   CAR BUTTONS
+   ============================================ */
+.car-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.car-buttons .btn {
+  flex: 1;
+  padding: 0.8rem;
+  font-size: 0.85rem;
+}
+
+.add-to-cart-btn {
+  white-space: nowrap;
+}
+
+/* ============================================
    RESPONSIVE DESIGN
    ============================================ */
 

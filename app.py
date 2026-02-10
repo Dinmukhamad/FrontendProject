@@ -107,6 +107,21 @@ class Favorite(db.Model):
         return f'<Favorite User:{self.user_id} Car:{self.car_id}>'
 
 
+class CartItem(db.Model):
+    """Shopping cart items"""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    car_id = db.Column(db.Integer, db.ForeignKey('car.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    user = db.relationship('User', backref=db.backref('cart_items', lazy=True))
+    car = db.relationship('Car', backref=db.backref('cart_items', lazy=True))
+
+    def __repr__(self):
+        return f'<CartItem User:{self.user_id} Car:{self.car_id}>'
+
+
 # ============================================
 # LOGIN MANAGER
 # ============================================
@@ -366,6 +381,100 @@ def toggle_favorite(car_id):
         db.session.add(new_favorite)
         db.session.commit()
         return jsonify({'status': 'added', 'message': 'Added to favorites'})
+
+
+# ============================================
+# ROUTES - SHOPPING CART
+# ============================================
+
+@app.route('/cart')
+@login_required
+def cart():
+    """View shopping cart"""
+    cart_items = CartItem.query.filter_by(user_id=current_user.id).all()
+    total = sum(item.car.price for item in cart_items)
+    return render_template('cart.html', cart_items=cart_items, total=total)
+
+
+@app.route('/api/cart/add/<int:car_id>', methods=['POST'])
+@login_required
+def add_to_cart(car_id):
+    """Add car to cart"""
+    car = Car.query.get_or_404(car_id)
+    
+    # Check if car is available
+    if car.status != 'available':
+        return jsonify({'status': 'error', 'message': 'This car is not available'}), 400
+    
+    # Check if already in cart
+    existing = CartItem.query.filter_by(user_id=current_user.id, car_id=car_id).first()
+    if existing:
+        return jsonify({'status': 'exists', 'message': 'Car is already in your cart'})
+    
+    cart_item = CartItem(user_id=current_user.id, car_id=car_id)
+    db.session.add(cart_item)
+    db.session.commit()
+    
+    cart_count = CartItem.query.filter_by(user_id=current_user.id).count()
+    return jsonify({'status': 'added', 'message': 'Added to cart', 'cart_count': cart_count})
+
+
+@app.route('/api/cart/remove/<int:car_id>', methods=['POST'])
+@login_required
+def remove_from_cart(car_id):
+    """Remove car from cart"""
+    cart_item = CartItem.query.filter_by(user_id=current_user.id, car_id=car_id).first()
+    
+    if cart_item:
+        db.session.delete(cart_item)
+        db.session.commit()
+        cart_count = CartItem.query.filter_by(user_id=current_user.id).count()
+        return jsonify({'status': 'removed', 'message': 'Removed from cart', 'cart_count': cart_count})
+    
+    return jsonify({'status': 'error', 'message': 'Item not found in cart'}), 404
+
+
+@app.route('/api/cart/count')
+@login_required
+def cart_count():
+    """Get cart item count"""
+    count = CartItem.query.filter_by(user_id=current_user.id).count()
+    return jsonify({'count': count})
+
+
+@app.route('/cart/checkout', methods=['POST'])
+@login_required
+def checkout():
+    """Process checkout - create inquiry for all cart items"""
+    cart_items = CartItem.query.filter_by(user_id=current_user.id).all()
+    
+    if not cart_items:
+        flash('Your cart is empty.', 'danger')
+        return redirect(url_for('cart'))
+    
+    # Create inquiry for the order
+    car_names = ', '.join([item.car.name for item in cart_items])
+    total = sum(item.car.price for item in cart_items)
+    
+    inquiry = Inquiry(
+        user_id=current_user.id,
+        full_name=current_user.full_name or current_user.username,
+        email=current_user.email,
+        phone=current_user.phone,
+        vehicle_interest=car_names,
+        message=f"Purchase request for: {car_names}. Total: ${total:,.0f}"
+    )
+    
+    db.session.add(inquiry)
+    
+    # Clear the cart
+    for item in cart_items:
+        db.session.delete(item)
+    
+    db.session.commit()
+    
+    flash('Thank you for your order! Our team will contact you shortly to complete the purchase.', 'success')
+    return redirect(url_for('profile'))
 
 
 # ============================================

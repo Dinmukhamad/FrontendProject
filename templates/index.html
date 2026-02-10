@@ -18,6 +18,7 @@
         <li><a href="#cars">Cars</a></li>
         <li><a href="#contact">Contact</a></li>
         {% if current_user.is_authenticated %}
+          <li><a href="{{ url_for('cart') }}" class="cart-link">Cart <span class="cart-badge" id="cart-badge"></span></a></li>
           <li><a href="{{ url_for('profile') }}">Profile</a></li>
           {% if current_user.is_admin %}
             <li><a href="{{ url_for('admin_dashboard') }}">Admin</a></li>
@@ -94,7 +95,12 @@
                 <span><strong>HP:</strong> {{ car.horsepower }}</span>
               </div>
               <p>{{ car.description }}</p>
-              <a href="#contact" class="btn" onclick="setVehicleInterest('{{ car.name }}')">Inquire Now</a>
+              <div class="car-buttons">
+                <a href="#contact" class="btn" onclick="setVehicleInterest('{{ car.name }}')">Inquire</a>
+                {% if current_user.is_authenticated %}
+                <button class="btn btn-primary add-to-cart-btn" onclick="addToCart({{ car.id }})">Add to Cart</button>
+                {% endif %}
+              </div>
             </div>
           </article>
           {% endfor %}
@@ -250,6 +256,46 @@
         }, 300);
       }, 3000);
     }
+
+    // Add to cart function
+    function addToCart(carId) {
+      fetch(`/api/cart/add/${carId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'added') {
+          showNotification('Added to cart!', 'success');
+          updateCartBadge(data.cart_count);
+        } else if (data.status === 'exists') {
+          showNotification('Already in cart', 'info');
+        } else {
+          showNotification(data.message, 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showNotification('Please login to add to cart', 'error');
+      });
+    }
+
+    // Update cart badge
+    function updateCartBadge(count) {
+      const badge = document.getElementById('cart-badge');
+      if (badge) {
+        badge.textContent = count;
+        badge.style.display = count > 0 ? 'inline-block' : 'none';
+      }
+    }
+
+    // Load cart count on page load
+    {% if current_user.is_authenticated %}
+    fetch('/api/cart/count')
+      .then(response => response.json())
+      .then(data => updateCartBadge(data.count))
+      .catch(error => console.error('Error:', error));
+    {% endif %}
   </script>
 </body>
 </html>

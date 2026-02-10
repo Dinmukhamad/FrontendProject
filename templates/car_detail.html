@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ car.name }} - PRESTIGE MOTORS</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .car-detail {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-xl);
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--spacing-xl) var(--spacing-lg);
+    }
+    .car-detail-image {
+      width: 100%;
+      height: 500px;
+      object-fit: cover;
+      border: 1px solid var(--color-medium-gray);
+    }
+    .car-detail-info h1 {
+      color: var(--color-gold);
+      margin-bottom: var(--spacing-sm);
+    }
+    .car-detail-price {
+      font-size: 2rem;
+      color: var(--color-white);
+      margin-bottom: var(--spacing-md);
+    }
+    .car-specs-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-lg);
+      padding: var(--spacing-md);
+      background-color: var(--color-dark-gray);
+      border: 1px solid var(--color-medium-gray);
+    }
+    .spec-item {
+      text-align: center;
+    }
+    .spec-item label {
+      display: block;
+      color: var(--color-gold);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 5px;
+    }
+    .spec-item span {
+      font-size: 1.2rem;
+      color: var(--color-white);
+    }
+    .car-description {
+      line-height: 1.8;
+      margin-bottom: var(--spacing-lg);
+    }
+    .car-actions {
+      display: flex;
+      gap: var(--spacing-md);
+    }
+    .favorite-btn-large {
+      background: transparent;
+      border: 2px solid var(--color-gold);
+      color: var(--color-gold);
+      padding: 1rem 2rem;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+    }
+    .favorite-btn-large:hover {
+      background: var(--color-gold);
+      color: var(--color-black);
+    }
+    .favorite-btn-large.active {
+      background: var(--color-gold);
+      color: var(--color-black);
+    }
+    @media (max-width: 767px) {
+      .car-detail {
+        grid-template-columns: 1fr;
+      }
+      .car-detail-image {
+        height: 300px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="{{ url_for('index') }}" class="logo">PRESTIGE</a>
+      <ul class="nav-links">
+        <li><a href="{{ url_for('index') }}">Home</a></li>
+        <li><a href="{{ url_for('cars') }}">Cars</a></li>
+        <li><a href="{{ url_for('index') }}#contact">Contact</a></li>
+        {% if current_user.is_authenticated %}
+          <li><a href="{{ url_for('profile') }}">Profile</a></li>
+          {% if current_user.is_admin %}
+            <li><a href="{{ url_for('admin_dashboard') }}">Admin</a></li>
+          {% endif %}
+          <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        {% else %}
+          <li><a href="{{ url_for('login') }}">Login</a></li>
+          <li><a href="{{ url_for('register') }}">Register</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+  </header>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+          <div class="flash-message flash-{{ category }}">
+            {{ message }}
+            <button class="close-flash" onclick="this.parentElement.remove()">×</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <main>
+    <div class="car-detail">
+      <div>
+        <img src="{{ car.image_url }}" alt="{{ car.name }}" class="car-detail-image">
+      </div>
+      <div class="car-detail-info">
+        <h1>{{ car.name }}</h1>
+        <p class="car-detail-price">{{ car.price|currency }}</p>
+        
+        <div class="car-specs-grid">
+          <div class="spec-item">
+            <label>Brand</label>
+            <span>{{ car.brand }}</span>
+          </div>
+          <div class="spec-item">
+            <label>Model</label>
+            <span>{{ car.model }}</span>
+          </div>
+          <div class="spec-item">
+            <label>Year</label>
+            <span>{{ car.year }}</span>
+          </div>
+          <div class="spec-item">
+            <label>Horsepower</label>
+            <span>{{ car.horsepower }} HP</span>
+          </div>
+        </div>
+
+        <p class="car-description">{{ car.description }}</p>
+
+        <div class="car-actions">
+          <a href="{{ url_for('index') }}#contact" class="btn">Inquire Now</a>
+          {% if current_user.is_authenticated %}
+          <button class="btn btn-primary" onclick="addToCart({{ car.id }})">Add to Cart</button>
+          <button class="favorite-btn-large {% if is_favorite %}active{% endif %}" onclick="toggleFavorite({{ car.id }})">
+            {% if is_favorite %}♥{% else %}♡{% endif %}
+          </button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 <span class="gold-text">Prestige Motors</span>. All Rights Reserved.</p>
+  </footer>
+
+  <script>
+    function toggleFavorite(carId) {
+      fetch(`/api/favorite/toggle/${carId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .then(response => response.json())
+      .then(data => {
+        const btn = document.querySelector('.favorite-btn-large');
+        if (data.status === 'added') {
+          btn.innerHTML = '♥';
+          btn.classList.add('active');
+          showNotification('Added to favorites!', 'success');
+        } else {
+          btn.innerHTML = '♡';
+          btn.classList.remove('active');
+          showNotification('Removed from favorites', 'info');
+        }
+      })
+      .catch(error => console.error('Error:', error));
+    }
+
+    function addToCart(carId) {
+      fetch(`/api/cart/add/${carId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'added') {
+          showNotification('Added to cart!', 'success');
+        } else if (data.status === 'exists') {
+          showNotification('Already in cart', 'info');
+        } else {
+          showNotification(data.message, 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error adding to cart', 'error');
+      });
+    }
+
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `notification notification-${type}`;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      setTimeout(() => notification.classList.add('show'), 100);
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inquiries - PRESTIGE MOTORS</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .admin-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+    .admin-header h1 {
+      color: var(--color-gold);
+    }
+    .admin-nav {
+      display: flex;
+      gap: 15px;
+    }
+    .admin-nav a {
+      padding: 10px 20px;
+      background: var(--color-dark-gray);
+      border: 1px solid var(--color-medium-gray);
+      color: var(--color-off-white);
+      transition: all 0.3s ease;
+    }
+    .admin-nav a:hover, .admin-nav a.active {
+      border-color: var(--color-gold);
+      color: var(--color-gold);
+    }
+    .inquiries-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--color-dark-gray);
+    }
+    .inquiries-table th, .inquiries-table td {
+      padding: 15px;
+      text-align: left;
+      border-bottom: 1px solid var(--color-medium-gray);
+    }
+    .inquiries-table th {
+      color: var(--color-gold);
+      font-weight: 500;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+    }
+    .inquiries-table td {
+      color: var(--color-off-white);
+    }
+    .message-preview {
+      max-width: 300px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .status-badge {
+      padding: 5px 10px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .status-new {
+      background: rgba(201, 162, 77, 0.2);
+      color: var(--color-gold);
+    }
+    .status-contacted {
+      background: rgba(100, 200, 100, 0.2);
+      color: #64c864;
+    }
+    .status-closed {
+      background: rgba(150, 150, 150, 0.2);
+      color: #999;
+    }
+    .inquiry-detail {
+      display: none;
+      background: var(--color-black);
+      padding: 20px;
+      margin-top: 10px;
+      border: 1px solid var(--color-medium-gray);
+    }
+    .inquiry-detail.show {
+      display: block;
+    }
+    .view-btn {
+      padding: 8px 15px;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      background: transparent;
+      border: 1px solid var(--color-gold);
+      color: var(--color-gold);
+      transition: all 0.3s ease;
+    }
+    .view-btn:hover {
+      background: var(--color-gold);
+      color: var(--color-black);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="{{ url_for('index') }}" class="logo">PRESTIGE</a>
+      <ul class="nav-links">
+        <li><a href="{{ url_for('index') }}">Home</a></li>
+        <li><a href="{{ url_for('admin_dashboard') }}" class="active">Admin</a></li>
+        <li><a href="{{ url_for('profile') }}">Profile</a></li>
+        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+          <div class="flash-message flash-{{ category }}">
+            {{ message }}
+            <button class="close-flash" onclick="this.parentElement.remove()">×</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <main>
+    <div class="admin-container">
+      <div class="admin-header">
+        <h1>Customer Inquiries</h1>
+        <div class="admin-nav">
+          <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+          <a href="{{ url_for('admin_cars') }}">Cars</a>
+          <a href="{{ url_for('admin_inquiries') }}" class="active">Inquiries</a>
+        </div>
+      </div>
+
+      <table class="inquiries-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Interest</th>
+            <th>Message</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for inquiry in inquiries %}
+          <tr>
+            <td>{{ inquiry.created_at.strftime('%b %d, %Y') }}</td>
+            <td>{{ inquiry.full_name }}</td>
+            <td><a href="mailto:{{ inquiry.email }}">{{ inquiry.email }}</a></td>
+            <td>{{ inquiry.phone or '-' }}</td>
+            <td>{{ inquiry.vehicle_interest or '-' }}</td>
+            <td class="message-preview" title="{{ inquiry.message }}">{{ inquiry.message }}</td>
+            <td><span class="status-badge status-{{ inquiry.status }}">{{ inquiry.status }}</span></td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="7" style="text-align: center;">No inquiries yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 <span class="gold-text">Prestige Motors</span>. All Rights Reserved.</p>
+  </footer>
+</body>
+</html>

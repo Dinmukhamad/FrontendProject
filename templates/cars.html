@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Our Collection - PRESTIGE MOTORS</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="{{ url_for('index') }}" class="logo">PRESTIGE</a>
+      <ul class="nav-links">
+        <li><a href="{{ url_for('index') }}">Home</a></li>
+        <li><a href="{{ url_for('cars') }}" class="active">Cars</a></li>
+        <li><a href="{{ url_for('index') }}#contact">Contact</a></li>
+        {% if current_user.is_authenticated %}
+          <li><a href="{{ url_for('profile') }}">Profile</a></li>
+          {% if current_user.is_admin %}
+            <li><a href="{{ url_for('admin_dashboard') }}">Admin</a></li>
+          {% endif %}
+          <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        {% else %}
+          <li><a href="{{ url_for('login') }}">Login</a></li>
+          <li><a href="{{ url_for('register') }}">Register</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+  </header>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+          <div class="flash-message flash-{{ category }}">
+            {{ message }}
+            <button class="close-flash" onclick="this.parentElement.remove()">×</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <main>
+    <section id="cars">
+      <div class="container">
+        <div class="section-title">
+          <h1>Our Exclusive Collection</h1>
+          <p>Handpicked masterpieces from the world's finest automotive manufacturers</p>
+        </div>
+
+        <div class="cars-grid">
+          {% for car in cars %}
+          <article class="car-card">
+            {% if current_user.is_authenticated %}
+            <button class="favorite-btn" onclick="toggleFavorite({{ car.id }})">
+              <span class="heart-icon">♡</span>
+            </button>
+            {% endif %}
+            
+            <img src="{{ car.image_url }}" alt="{{ car.name }}" class="car-image">
+            <div class="car-content">
+              <h3>{{ car.name }}</h3>
+              <p class="car-price">{{ car.price|currency }}</p>
+              <div class="car-specs">
+                <span><strong>Year:</strong> {{ car.year }}</span>
+                <span><strong>HP:</strong> {{ car.horsepower }}</span>
+              </div>
+              <p>{{ car.description[:150] }}...</p>
+              <a href="{{ url_for('car_detail', car_id=car.id) }}" class="btn">View Details</a>
+            </div>
+          </article>
+          {% else %}
+          <p style="text-align: center; grid-column: 1/-1;">No cars available at the moment.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 <span class="gold-text">Prestige Motors</span>. All Rights Reserved.</p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  <script>
+    function toggleFavorite(carId) {
+      fetch(`/api/favorite/toggle/${carId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .then(response => response.json())
+      .then(data => {
+        const btn = event.target.closest('.favorite-btn');
+        const heart = btn.querySelector('.heart-icon');
+        if (data.status === 'added') {
+          heart.textContent = '♥';
+          heart.style.color = '#c9a24d';
+        } else {
+          heart.textContent = '♡';
+          heart.style.color = '#c9a24d';
+        }
+      })
+      .catch(error => console.error('Error:', error));
+    }
+  </script>
+</body>
+</html>

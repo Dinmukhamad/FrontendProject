@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 - Page Not Found | PRESTIGE MOTORS</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .error-container {
+      min-height: 70vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .error-code {
+      font-family: var(--font-heading);
+      font-size: 8rem;
+      color: var(--color-gold);
+      line-height: 1;
+      margin-bottom: 20px;
+    }
+    .error-title {
+      font-size: 2rem;
+      color: var(--color-white);
+      margin-bottom: 15px;
+    }
+    .error-message {
+      font-size: 1.1rem;
+      color: var(--color-light-gray);
+      max-width: 500px;
+      margin-bottom: 30px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="{{ url_for('index') }}" class="logo">PRESTIGE</a>
+      <ul class="nav-links">
+        <li><a href="{{ url_for('index') }}">Home</a></li>
+        <li><a href="{{ url_for('cars') }}">Cars</a></li>
+        <li><a href="{{ url_for('index') }}#contact">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <div class="error-container">
+      <div class="error-code">404</div>
+      <h1 class="error-title">Page Not Found</h1>
+      <p class="error-message">The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.</p>
+      <a href="{{ url_for('index') }}" class="btn btn-primary">Return to Homepage</a>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 <span class="gold-text">Prestige Motors</span>. All Rights Reserved.</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Cars - PRESTIGE MOTORS</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .admin-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+    .admin-header h1 {
+      color: var(--color-gold);
+    }
+    .admin-nav {
+      display: flex;
+      gap: 15px;
+    }
+    .admin-nav a {
+      padding: 10px 20px;
+      background: var(--color-dark-gray);
+      border: 1px solid var(--color-medium-gray);
+      color: var(--color-off-white);
+      transition: all 0.3s ease;
+    }
+    .admin-nav a:hover, .admin-nav a.active {
+      border-color: var(--color-gold);
+      color: var(--color-gold);
+    }
+    .cars-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--color-dark-gray);
+    }
+    .cars-table th, .cars-table td {
+      padding: 15px;
+      text-align: left;
+      border-bottom: 1px solid var(--color-medium-gray);
+    }
+    .cars-table th {
+      color: var(--color-gold);
+      font-weight: 500;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+    }
+    .cars-table td {
+      color: var(--color-off-white);
+    }
+    .cars-table img {
+      width: 80px;
+      height: 50px;
+      object-fit: cover;
+    }
+    .action-btns {
+      display: flex;
+      gap: 10px;
+    }
+    .action-btns a, .action-btns button {
+      padding: 8px 15px;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .btn-edit {
+      background: transparent;
+      border: 1px solid var(--color-gold);
+      color: var(--color-gold);
+    }
+    .btn-edit:hover {
+      background: var(--color-gold);
+      color: var(--color-black);
+    }
+    .btn-delete {
+      background: transparent;
+      border: 1px solid #e74c3c;
+      color: #e74c3c;
+    }
+    .btn-delete:hover {
+      background: #e74c3c;
+      color: white;
+    }
+    .status-available { color: #64c864; }
+    .status-sold { color: #e74c3c; }
+    .status-reserved { color: var(--color-gold); }
+    .add-car-btn {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="{{ url_for('index') }}" class="logo">PRESTIGE</a>
+      <ul class="nav-links">
+        <li><a href="{{ url_for('index') }}">Home</a></li>
+        <li><a href="{{ url_for('admin_dashboard') }}" class="active">Admin</a></li>
+        <li><a href="{{ url_for('profile') }}">Profile</a></li>
+        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+          <div class="flash-message flash-{{ category }}">
+            {{ message }}
+            <button class="close-flash" onclick="this.parentElement.remove()">×</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <main>
+    <div class="admin-container">
+      <div class="admin-header">
+        <h1>Manage Cars</h1>
+        <div class="admin-nav">
+          <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+          <a href="{{ url_for('admin_cars') }}" class="active">Cars</a>
+          <a href="{{ url_for('admin_inquiries') }}">Inquiries</a>
+        </div>
+      </div>
+
+      <div class="add-car-btn">
+        <a href="{{ url_for('admin_add_car') }}" class="btn btn-primary">+ Add New Car</a>
+      </div>
+
+      <table class="cars-table">
+        <thead>
+          <tr>
+            <th>Image</th>
+            <th>Name</th>
+            <th>Brand</th>
+            <th>Year</th>
+            <th>Price</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for car in cars %}
+          <tr>
+            <td><img src="{{ car.image_url }}" alt="{{ car.name }}"></td>
+            <td>{{ car.name }}</td>
+            <td>{{ car.brand }}</td>
+            <td>{{ car.year }}</td>
+            <td>{{ car.price|currency }}</td>
+            <td><span class="status-{{ car.status }}">{{ car.status|capitalize }}</span></td>
+            <td class="action-btns">
+              <a href="{{ url_for('admin_edit_car', car_id=car.id) }}" class="btn-edit">Edit</a>
+              <form action="{{ url_for('admin_delete_car', car_id=car.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this car?');">
+                <button type="submit" class="btn-delete">Delete</button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="7" style="text-align: center;">No cars in the database.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 <span class="gold-text">Prestige Motors</span>. All Rights Reserved.</p>
+  </footer>
+</body>
+</html>
