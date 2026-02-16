@@ -792,6 +792,15 @@ def admin_inquiries():
     return render_template('admin/inquiries.html', inquiries=inquiries)
 
 
+@app.route('/admin/users')
+@login_required
+@admin_required
+def admin_users():
+    """Admin user management"""
+    users = User.query.order_by(User.created_at.desc()).all()
+    return render_template('admin/users.html', users=users)
+
+
 # ============================================
 # DATABASE INITIALIZATION
 # ============================================
