@@ -3,61 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% if car %}Edit{% else %}Add{% endif %} Car - PRESTIGE MOTORS</title>
+  <title>{% if car %}Edit{% else %}Add{% endif %} Car - Admin</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <style>
-    .admin-container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 40px 20px;
-    }
-    .admin-header h1 {
-      color: var(--color-gold);
-      margin-bottom: 30px;
-    }
-    .car-form {
-      background: var(--color-dark-gray);
-      border: 1px solid var(--color-medium-gray);
-      padding: 40px;
-    }
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-    .form-group {
-      margin-bottom: 20px;
-    }
-    .form-group.full-width {
-      grid-column: 1 / -1;
-    }
-    .form-group select {
-      width: 100%;
-      padding: 1rem;
-      font-family: var(--font-body);
-      font-size: 1rem;
-      background-color: var(--color-black);
-      border: 1px solid var(--color-medium-gray);
-      color: var(--color-off-white);
-    }
-    .form-group select:focus {
-      outline: none;
-      border-color: var(--color-gold);
-    }
-    .btn-group {
-      display: flex;
-      gap: 15px;
-      margin-top: 20px;
-    }
-    .btn-secondary {
-      background-color: transparent;
-      border-color: var(--color-light-gray);
-      color: var(--color-light-gray);
-    }
-    .btn-secondary:hover {
-      border-color: var(--color-white);
-      color: var(--color-white);
-    }
+    .admin-container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+    .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .admin-header h1 { color: var(--color-gold); margin-bottom: 0; }
+    .car-form { background: var(--color-dark-gray); border: 1px solid var(--color-medium-gray); padding: 40px; margin-bottom: 30px; }
+    .form-section { margin-bottom: 40px; padding-bottom: 30px; border-bottom: 1px solid var(--color-medium-gray); }
+    .form-section:last-child { border-bottom: none; margin-bottom: 0; }
+    .form-section-title { color: var(--color-gold); font-size: 1.2rem; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
+    .form-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .form-group { margin-bottom: 20px; }
+    .form-group.full-width { grid-column: 1 / -1; }
+    .form-group label { display: block; margin-bottom: 8px; color: var(--color-gold); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 1rem; font-family: var(--font-body); font-size: 1rem; background-color: var(--color-black); border: 1px solid var(--color-medium-gray); color: var(--color-off-white); }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: var(--color-gold); }
+    .form-group textarea { min-height: 120px; resize: vertical; }
+    .form-group small { display: block; margin-top: 5px; color: var(--color-light-gray); font-size: 0.85rem; }
+    .btn-group { display: flex; gap: 15px; margin-top: 30px; }
+    .btn-secondary { background-color: transparent; border-color: var(--color-light-gray); color: var(--color-light-gray); }
+    .btn-secondary:hover { border-color: var(--color-white); color: var(--color-white); }
+    .btn-danger { background-color: #dc3545; border-color: #dc3545; color: white; }
+    .btn-danger:hover { background-color: #c82333; }
+    .image-gallery { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+    .image-item { position: relative; border: 2px solid var(--color-medium-gray); overflow: hidden; }
+    .image-item.primary { border-color: var(--color-gold); }
+    .image-item img { width: 100%; height: 150px; object-fit: cover; }
+    .image-item-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.9); padding: 8px; display: flex; gap: 5px; justify-content: center; opacity: 0; transition: opacity 0.3s; }
+    .image-item:hover .image-item-overlay { opacity: 1; }
+    .primary-badge { position: absolute; top: 5px; left: 5px; background: var(--color-gold); color: var(--color-black); padding: 3px 8px; font-size: 0.7rem; text-transform: uppercase; }
+    .add-image-form { display: flex; gap: 15px; padding: 20px; background: var(--color-black); border: 1px dashed var(--color-medium-gray); }
+    .add-image-form input { flex: 1; }
+    .main-image-preview { margin-top: 15px; }
+    .main-image-preview img { max-width: 300px; max-height: 200px; object-fit: cover; border: 1px solid var(--color-medium-gray); }
+    .danger-zone { margin-top: 40px; padding: 20px; background: var(--color-dark-gray); border: 1px solid #dc3545; }
+    @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } .image-gallery { grid-template-columns: repeat(2, 1fr); } }
   </style>
 </head>
 <body>
@@ -67,95 +48,125 @@
       <ul class="nav-links">
         <li><a href="{{ url_for('index') }}">Home</a></li>
         <li><a href="{{ url_for('admin_dashboard') }}" class="active">Admin</a></li>
-        <li><a href="{{ url_for('profile') }}">Profile</a></li>
+        <li><a href="{{ url_for('admin_cars') }}">Cars</a></li>
         <li><a href="{{ url_for('logout') }}">Logout</a></li>
       </ul>
     </nav>
   </header>
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <div class="flash-messages">
-        {% for category, message in messages %}
-          <div class="flash-message flash-{{ category }}">
-            {{ message }}
-            <button class="close-flash" onclick="this.parentElement.remove()">×</button>
-          </div>
-        {% endfor %}
-      </div>
-    {% endif %}
-  {% endwith %}
 
   <main>
     <div class="admin-container">
       <div class="admin-header">
-        <h1>{% if car %}Edit Car{% else %}Add New Car{% endif %}</h1>
+        <h1>{% if car %}Edit: {{ car.name }}{% else %}Add New Car{% endif %}</h1>
+        <a href="{{ url_for('admin_cars') }}" class="btn btn-secondary">← Back</a>
       </div>
 
-      <form class="car-form" method="POST" action="{% if car %}{{ url_for('admin_edit_car', car_id=car.id) }}{% else %}{{ url_for('admin_add_car') }}{% endif %}">
-        <div class="form-row">
-          <div class="form-group">
-            <label for="name">Car Name *</label>
-            <input type="text" id="name" name="name" value="{{ car.name if car else '' }}" placeholder="e.g., BMW M5 Competition" required>
+      <form class="car-form" method="POST">
+        <div class="form-section">
+          <h2 class="form-section-title">Basic Information</h2>
+          <div class="form-row">
+            <div class="form-group"><label>Name *</label><input type="text" name="name" value="{{ car.name if car else '' }}" required></div>
+            <div class="form-group"><label>Brand *</label><input type="text" name="brand" value="{{ car.brand if car else '' }}" required></div>
+            <div class="form-group"><label>Model *</label><input type="text" name="model" value="{{ car.model if car else '' }}" required></div>
           </div>
-          <div class="form-group">
-            <label for="brand">Brand *</label>
-            <input type="text" id="brand" name="brand" value="{{ car.brand if car else '' }}" placeholder="e.g., BMW" required>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="model">Model *</label>
-            <input type="text" id="model" name="model" value="{{ car.model if car else '' }}" placeholder="e.g., M5 Competition" required>
-          </div>
-          <div class="form-group">
-            <label for="year">Year *</label>
-            <input type="number" id="year" name="year" value="{{ car.year if car else '' }}" placeholder="e.g., 2024" min="1900" max="2030" required>
+          <div class="form-row">
+            <div class="form-group"><label>Year *</label><input type="number" name="year" value="{{ car.year if car else '' }}" required></div>
+            <div class="form-group"><label>Price ($) *</label><input type="number" name="price" value="{{ car.price if car else '' }}" step="0.01" required></div>
+            <div class="form-group"><label>Status</label>
+              <select name="status">
+                <option value="available" {% if not car or car.status == 'available' %}selected{% endif %}>Available</option>
+                <option value="sold" {% if car and car.status == 'sold' %}selected{% endif %}>Sold</option>
+                <option value="reserved" {% if car and car.status == 'reserved' %}selected{% endif %}>Reserved</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="price">Price ($) *</label>
-            <input type="number" id="price" name="price" value="{{ car.price if car else '' }}" placeholder="e.g., 110000" step="0.01" min="0" required>
+        <div class="form-section">
+          <h2 class="form-section-title">Technical Specifications</h2>
+          <div class="form-row">
+            <div class="form-group"><label>Horsepower</label><input type="number" name="horsepower" value="{{ car.horsepower if car else '' }}"></div>
+            <div class="form-group"><label>Engine</label><input type="text" name="engine" value="{{ car.engine if car else '' }}" placeholder="4.4L V8 Twin-Turbo"></div>
+            <div class="form-group"><label>Transmission</label>
+              <select name="transmission">
+                <option value="Automatic" {% if not car or car.transmission == 'Automatic' %}selected{% endif %}>Automatic</option>
+                <option value="Manual" {% if car and car.transmission == 'Manual' %}selected{% endif %}>Manual</option>
+                <option value="Semi-Automatic" {% if car and car.transmission == 'Semi-Automatic' %}selected{% endif %}>Semi-Automatic</option>
+              </select>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="horsepower">Horsepower *</label>
-            <input type="number" id="horsepower" name="horsepower" value="{{ car.horsepower if car else '' }}" placeholder="e.g., 625" min="0" required>
+          <div class="form-row">
+            <div class="form-group"><label>Fuel Type</label>
+              <select name="fuel_type">
+                <option value="Petrol" {% if not car or car.fuel_type == 'Petrol' %}selected{% endif %}>Petrol</option>
+                <option value="Diesel" {% if car and car.fuel_type == 'Diesel' %}selected{% endif %}>Diesel</option>
+                <option value="Electric" {% if car and car.fuel_type == 'Electric' %}selected{% endif %}>Electric</option>
+                <option value="Hybrid" {% if car and car.fuel_type == 'Hybrid' %}selected{% endif %}>Hybrid</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Top Speed (km/h)</label><input type="number" name="top_speed" value="{{ car.top_speed if car else '' }}"></div>
+            <div class="form-group"><label>0-100 km/h (sec)</label><input type="number" name="acceleration" value="{{ car.acceleration if car else '' }}" step="0.1"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Mileage (km)</label><input type="number" name="mileage" value="{{ car.mileage if car else '0' }}"></div>
+            <div class="form-group"><label>Exterior Color</label><input type="text" name="exterior_color" value="{{ car.exterior_color if car else '' }}"></div>
+            <div class="form-group"><label>Interior Color</label><input type="text" name="interior_color" value="{{ car.interior_color if car else '' }}"></div>
           </div>
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="image_url">Image URL *</label>
-            <input type="url" id="image_url" name="image_url" value="{{ car.image_url if car else '' }}" placeholder="https://example.com/car-image.jpg" required>
-          </div>
-          <div class="form-group">
-            <label for="status">Status</label>
-            <select id="status" name="status">
-              <option value="available" {% if car and car.status == 'available' %}selected{% endif %}>Available</option>
-              <option value="sold" {% if car and car.status == 'sold' %}selected{% endif %}>Sold</option>
-              <option value="reserved" {% if car and car.status == 'reserved' %}selected{% endif %}>Reserved</option>
-            </select>
-          </div>
+        <div class="form-section">
+          <h2 class="form-section-title">Description & Features</h2>
+          <div class="form-group full-width"><label>Description *</label><textarea name="description" required>{{ car.description if car else '' }}</textarea></div>
+          <div class="form-group full-width"><label>Features</label><textarea name="features" placeholder="Premium Leather, Panoramic Sunroof, Cruise Control...">{{ car.features if car else '' }}</textarea><small>Separate with commas</small></div>
         </div>
 
-        <div class="form-group full-width">
-          <label for="description">Description *</label>
-          <textarea id="description" name="description" placeholder="Enter car description..." required>{{ car.description if car else '' }}</textarea>
+        <div class="form-section">
+          <h2 class="form-section-title">Main Image</h2>
+          <div class="form-group"><label>Image URL *</label><input type="url" name="image_url" value="{{ car.image_url if car else '' }}" required onchange="previewImg(this.value)"></div>
+          <div class="main-image-preview" id="preview">{% if car and car.image_url %}<img src="{{ car.image_url }}">{% endif %}</div>
         </div>
 
         <div class="btn-group">
           <a href="{{ url_for('admin_cars') }}" class="btn btn-secondary">Cancel</a>
-          <button type="submit" class="btn btn-primary">{% if car %}Update Car{% else %}Add Car{% endif %}</button>
+          <button type="submit" class="btn btn-primary">{% if car %}Save Changes{% else %}Add Car{% endif %}</button>
         </div>
       </form>
+
+      {% if car %}
+      <div class="car-form">
+        <h2 class="form-section-title">Gallery ({{ car.images|length }} images)</h2>
+        {% if car.images %}
+        <div class="image-gallery">
+          {% for img in car.images %}
+          <div class="image-item {% if img.image_url == car.image_url %}primary{% endif %}">
+            {% if img.image_url == car.image_url %}<span class="primary-badge">Main</span>{% endif %}
+            <img src="{{ img.image_url }}">
+            <div class="image-item-overlay">
+              <form action="{{ url_for('admin_set_primary_image', image_id=img.id) }}" method="POST" style="display:inline;"><button class="btn btn-primary" style="padding:5px 8px;font-size:0.7rem;">Main</button></form>
+              <form action="{{ url_for('admin_delete_car_image', image_id=img.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Delete?')"><button class="btn btn-danger" style="padding:5px 8px;font-size:0.7rem;">Del</button></form>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}<p style="color:var(--color-light-gray);margin-bottom:20px;">No gallery images yet.</p>{% endif %}
+        <form class="add-image-form" action="{{ url_for('admin_add_car_image', car_id=car.id) }}" method="POST">
+          <input type="url" name="image_url" placeholder="Paste image URL..." required>
+          <button class="btn btn-primary">Add Image</button>
+        </form>
+      </div>
+
+      <div class="danger-zone">
+        <h3 style="color:#dc3545;margin-bottom:15px;">Danger Zone</h3>
+        <form action="{{ url_for('admin_delete_car', car_id=car.id) }}" method="POST" onsubmit="return confirm('Delete this car permanently?')">
+          <button class="btn btn-danger">Delete Car</button>
+        </form>
+      </div>
+      {% endif %}
     </div>
   </main>
 
-  <footer>
-    <p>&copy; 2026 <span class="gold-text">Prestige Motors</span>. All Rights Reserved.</p>
-  </footer>
+  <footer><p>&copy; 2026 <span class="gold-text">Prestige Motors</span></p></footer>
+  <script>function previewImg(url){document.getElementById('preview').innerHTML=url?'<img src="'+url+'">':'';}</script>
 </body>
 </html>

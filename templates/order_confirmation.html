@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmed - PRESTIGE MOTORS</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .confirmation-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 60px 20px;
+      text-align: center;
+    }
+    .success-icon {
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(135deg, var(--color-gold), var(--color-gold-dark));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 30px;
+      animation: scaleIn 0.5s ease;
+    }
+    @keyframes scaleIn {
+      from {
+        transform: scale(0);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    .success-icon svg {
+      width: 50px;
+      height: 50px;
+      stroke: var(--color-black);
+      stroke-width: 3;
+      fill: none;
+    }
+    .confirmation-container h1 {
+      color: var(--color-gold);
+      margin-bottom: 15px;
+    }
+    .confirmation-container .subtitle {
+      font-size: 1.2rem;
+      color: var(--color-light-gray);
+      margin-bottom: 40px;
+    }
+    .order-details {
+      background: var(--color-dark-gray);
+      border: 1px solid var(--color-medium-gray);
+      padding: 30px;
+      text-align: left;
+      margin-bottom: 30px;
+    }
+    .order-details h2 {
+      color: var(--color-gold);
+      font-size: 1.3rem;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--color-medium-gray);
+    }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--color-medium-gray);
+    }
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+    .detail-row .label {
+      color: var(--color-light-gray);
+    }
+    .detail-row .value {
+      color: var(--color-white);
+      font-weight: 500;
+    }
+    .order-number {
+      background: var(--color-black);
+      padding: 20px;
+      border: 1px solid var(--color-gold);
+      margin-bottom: 30px;
+    }
+    .order-number .label {
+      color: var(--color-light-gray);
+      font-size: 0.9rem;
+      margin-bottom: 5px;
+    }
+    .order-number .number {
+      color: var(--color-gold);
+      font-size: 1.8rem;
+      font-family: var(--font-heading);
+      letter-spacing: 2px;
+    }
+    .next-steps {
+      background: var(--color-dark-gray);
+      border: 1px solid var(--color-medium-gray);
+      padding: 30px;
+      text-align: left;
+      margin-bottom: 30px;
+    }
+    .next-steps h3 {
+      color: var(--color-gold);
+      margin-bottom: 20px;
+    }
+    .next-steps ul {
+      list-style: none;
+      padding: 0;
+    }
+    .next-steps li {
+      padding: 10px 0;
+      padding-left: 30px;
+      position: relative;
+      color: var(--color-light-gray);
+    }
+    .next-steps li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: var(--color-gold);
+    }
+    .action-buttons {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+    }
+    .action-buttons .btn {
+      min-width: 200px;
+    }
+    @media (max-width: 600px) {
+      .action-buttons {
+        flex-direction: column;
+      }
+      .detail-row {
+        flex-direction: column;
+        gap: 5px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="{{ url_for('index') }}" class="logo">PRESTIGE</a>
+      <ul class="nav-links">
+        <li><a href="{{ url_for('index') }}">Home</a></li>
+        <li><a href="{{ url_for('cars') }}">Cars</a></li>
+        <li><a href="{{ url_for('profile') }}">Profile</a></li>
+        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <div class="confirmation-container">
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+
+      <h1>Order Confirmed!</h1>
+      <p class="subtitle">Thank you for your purchase. We've received your order and will contact you shortly.</p>
+
+      <div class="order-number">
+        <div class="label">Order Number</div>
+        <div class="number">#PM-{{ inquiry.id }}{{ inquiry.created_at.strftime('%Y%m%d') }}</div>
+      </div>
+
+      <div class="order-details">
+        <h2>Order Details</h2>
+        <div class="detail-row">
+          <span class="label">Customer Name</span>
+          <span class="value">{{ inquiry.full_name }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Email</span>
+          <span class="value">{{ inquiry.email }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Phone</span>
+          <span class="value">{{ inquiry.phone or 'Not provided' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Vehicle(s)</span>
+          <span class="value">{{ inquiry.vehicle_interest }}</span>
+        </div>
+        {% if inquiry.message %}
+          {% set payment_info = inquiry.message.split('Payment Method:')[1].split('\n')[0].strip() if 'Payment Method:' in inquiry.message else '' %}
+          {% if payment_info %}
+            <div class="detail-row">
+              <span class="label">Payment Method</span>
+              <span class="value">{{ payment_info }}</span>
+            </div>
+          {% endif %}
+        {% endif %}
+        <div class="detail-row">
+          <span class="label">Order Date</span>
+          <span class="value">{{ inquiry.created_at.strftime('%B %d, %Y at %I:%M %p') }}</span>
+        </div>
+      </div>
+
+      <div class="next-steps">
+        <h3>What Happens Next?</h3>
+        <ul>
+          <li>Our sales team will review your order within 24 hours</li>
+          <li>You'll receive a confirmation email with detailed information</li>
+          <li>A dedicated advisor will contact you to discuss delivery options</li>
+          <li>We'll arrange a convenient time for vehicle inspection and handover</li>
+        </ul>
+      </div>
+
+      <div class="action-buttons">
+        <a href="{{ url_for('profile') }}" class="btn">View My Orders</a>
+        <a href="{{ url_for('cars') }}" class="btn btn-primary">Continue Shopping</a>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 <span class="gold-text">Prestige Motors</span>. All Rights Reserved.</p>
+  </footer>
+</body>
+</html>

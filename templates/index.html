@@ -32,19 +32,6 @@
     </nav>
   </header>
 
-  <!-- Flash Messages -->
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <div class="flash-messages">
-        {% for category, message in messages %}
-          <div class="flash-message flash-{{ category }}">
-            {{ message }}
-            <button class="close-flash" onclick="this.parentElement.remove()">×</button>
-          </div>
-        {% endfor %}
-      </div>
-    {% endif %}
-  {% endwith %}
 
   <!-- MAIN CONTENT -->
   <main>
@@ -81,27 +68,21 @@
           {% for car in cars %}
           <article class="car-card">
             {% if current_user.is_authenticated %}
-            <button class="favorite-btn" onclick="toggleFavorite({{ car.id }})">
+            <button class="favorite-btn" onclick="event.stopPropagation(); toggleFavorite({{ car.id }}, event)">
               <span class="heart-icon">♡</span>
             </button>
             {% endif %}
             
-            <img src="{{ car.image_url }}" alt="{{ car.name }}" class="car-image">
-            <div class="car-content">
-              <h3>{{ car.name }}</h3>
-              <p class="car-price">{{ car.price|currency }}</p>
-              <div class="car-specs">
-                <span><strong>Year:</strong> {{ car.year }}</span>
-                <span><strong>HP:</strong> {{ car.horsepower }}</span>
+            <a href="{{ url_for('car_detail', car_id=car.id) }}" class="car-card-link">
+              <img src="{{ car.image_url }}" alt="{{ car.name }}" class="car-image">
+              <div class="car-content">
+                <h3>{{ car.name }}</h3>
+                <p class="car-price">{{ car.price|currency }}</p>
+                <div class="car-buttons">
+                  <span class="btn">View Details</span>
+                </div>
               </div>
-              <p>{{ car.description }}</p>
-              <div class="car-buttons">
-                <a href="#contact" class="btn" onclick="setVehicleInterest('{{ car.name }}')">Inquire</a>
-                {% if current_user.is_authenticated %}
-                <button class="btn btn-primary add-to-cart-btn" onclick="addToCart({{ car.id }})">Add to Cart</button>
-                {% endif %}
-              </div>
-            </div>
+            </a>
           </article>
           {% endfor %}
         </div>
@@ -197,87 +178,31 @@
   <script src="{{ url_for('static', filename='js/script.js') }}"></script>
   <script>
     // Favorite toggle function
-    function toggleFavorite(carId) {
+    function toggleFavorite(carId, e) {
       fetch(`/api/favorite/toggle/${carId}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin'
       })
-      .then(response => response.json())
+      .then(response => {
+        if (response.status === 401) {
+          window.location.href = '{{ url_for("login") }}';
+          return null;
+        }
+        return response.json();
+      })
       .then(data => {
-        const btn = event.target.closest('.favorite-btn');
+        if (!data) return;
+        const btn = e ? e.target.closest('.favorite-btn') : event.target.closest('.favorite-btn');
         const heart = btn.querySelector('.heart-icon');
         
         if (data.status === 'added') {
           heart.textContent = '♥';
-          heart.style.color = '#c9a24d';
-          showNotification('Added to favorites!', 'success');
-        } else {
+        } else if (data.status === 'removed') {
           heart.textContent = '♡';
-          heart.style.color = '#c9a24d';
-          showNotification('Removed from favorites', 'info');
         }
       })
-      .catch(error => {
-        console.error('Error:', error);
-        showNotification('Please login to add favorites', 'error');
-      });
-    }
-
-    // Pre-fill vehicle interest
-    function setVehicleInterest(carName) {
-      setTimeout(() => {
-        const interestField = document.getElementById('interest');
-        if (interestField) {
-          interestField.value = carName;
-        }
-      }, 500);
-    }
-
-    // Notification function
-    function showNotification(message, type = 'info') {
-      const notification = document.createElement('div');
-      notification.className = `notification notification-${type}`;
-      notification.textContent = message;
-      
-      document.body.appendChild(notification);
-      
-      setTimeout(() => {
-        notification.classList.add('show');
-      }, 100);
-      
-      setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => {
-          if (notification.parentElement) {
-            document.body.removeChild(notification);
-          }
-        }, 300);
-      }, 3000);
-    }
-
-    // Add to cart function
-    function addToCart(carId) {
-      fetch(`/api/cart/add/${carId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.status === 'added') {
-          showNotification('Added to cart!', 'success');
-          updateCartBadge(data.cart_count);
-        } else if (data.status === 'exists') {
-          showNotification('Already in cart', 'info');
-        } else {
-          showNotification(data.message, 'error');
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        showNotification('Please login to add to cart', 'error');
-      });
+      .catch(error => console.error('Error:', error));
     }
 
     // Update cart badge

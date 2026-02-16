@@ -178,9 +178,8 @@
         carCards.forEach(card => {
             const img = card.querySelector('.car-image');
             
-            // Hover effects
+            // Hover effects only - no click interception
             card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-10px) scale(1.02)';
                 this.style.boxShadow = '0 20px 40px rgba(201, 162, 77, 0.2)';
                 
                 if (img) {
@@ -189,55 +188,13 @@
             });
             
             card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0) scale(1)';
                 this.style.boxShadow = 'none';
                 
                 if (img) {
                     img.style.transform = 'scale(1)';
                 }
             });
-
-            // Click interaction for "View Details" buttons
-            const detailBtn = card.querySelector('.btn');
-            if (detailBtn) {
-                const originalHref = detailBtn.getAttribute('href');
-                detailBtn.addEventListener('click', function(e) {
-                    // If it's the contact link, let the smooth scroll handle it
-                    if (originalHref && originalHref.startsWith('#')) {
-                        return; // Let the smooth scroll function handle it
-                    }
-                    
-                    e.preventDefault();
-                    const carName = card.querySelector('h3').textContent;
-                    showCarDetails(carName);
-                });
-            }
         });
-    }
-
-    function showCarDetails(carName) {
-        // Scroll to contact section instead of showing modal
-        const contactSection = document.getElementById('contact');
-        if (contactSection) {
-            const header = document.querySelector('header');
-            const headerHeight = header ? header.offsetHeight : 0;
-            const targetPosition = contactSection.offsetTop - headerHeight;
-            
-            window.scrollTo({
-                top: targetPosition,
-                behavior: 'smooth'
-            });
-            
-            // Pre-fill the vehicle interest field
-            setTimeout(() => {
-                const interestField = document.getElementById('interest');
-                if (interestField) {
-                    interestField.value = carName;
-                    interestField.focus();
-                    showNotification(`Interested in ${carName}? Fill out the form below!`, 'info');
-                }
-            }, 800);
-        }
     }
 
     // ============================================
@@ -332,7 +289,6 @@
         
         // Simulate form submission
         setTimeout(() => {
-            showNotification('Message sent successfully! We will contact you shortly.', 'success');
             form.reset();
             submitBtn.textContent = originalText;
             submitBtn.disabled = false;
@@ -424,24 +380,6 @@
     // ============================================
     // UTILITY FUNCTIONS
     // ============================================
-    function showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.textContent = message;
-        
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            notification.classList.add('show');
-        }, 100);
-        
-        setTimeout(() => {
-            notification.classList.remove('show');
-            setTimeout(() => {
-                document.body.removeChild(notification);
-            }, 300);
-        }, 5000);
-    }
 
     // ============================================
     // PERFORMANCE MONITORING
@@ -493,37 +431,6 @@
             .form-group textarea.error {
                 border-color: #ff6b6b;
                 box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.2);
-            }
-            
-            /* Notification styles */
-            .notification {
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 15px 20px;
-                border-radius: 5px;
-                color: white;
-                font-weight: 500;
-                z-index: 3000;
-                transform: translateX(400px);
-                transition: transform 0.3s ease;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            }
-            
-            .notification.show {
-                transform: translateX(0);
-            }
-            
-            .notification.success {
-                background-color: #4CAF50;
-            }
-            
-            .notification.error {
-                background-color: #f44336;
-            }
-            
-            .notification.info {
-                background-color: #c9a24d;
             }
             
             /* Mobile menu styles */

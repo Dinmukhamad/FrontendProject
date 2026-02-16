@@ -366,6 +366,8 @@ section {
   overflow: hidden;
   transition: all var(--transition-medium);
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .car-card::before {
@@ -405,6 +407,9 @@ section {
 
 .car-content {
   padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .car-card h3 {
@@ -423,12 +428,29 @@ section {
   line-height: 1.7;
   margin-bottom: var(--spacing-md);
   color: var(--color-light-gray);
+  flex: 1;
 }
 
 .car-card .btn {
   width: 100%;
   text-align: center;
   padding: 0.9rem;
+}
+
+.car-card .car-buttons {
+  margin-top: auto;
+}
+
+.car-card-link {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+
+.car-card-link:hover {
+  color: inherit;
 }
 
 /* ============================================

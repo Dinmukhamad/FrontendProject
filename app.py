@@ -9,8 +9,17 @@ from functools import wraps
 app = Flask(__name__)
 
 # Configuration
-app.config['SECRET_KEY'] = 'your-secret-key-change-this-in-production'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///prestige_motors.db'
+# Use environment variables for production, fallback to defaults for local development
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this-in-production')
+# Use PostgreSQL in production (Render provides DATABASE_URL), SQLite for local development
+database_url = os.environ.get('DATABASE_URL')
+if database_url:
+    # Render.com provides DATABASE_URL with postgres://, but SQLAlchemy needs postgresql://
+    if database_url.startswith('postgres://'):
+        database_url = database_url.replace('postgres://', 'postgresql://', 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///prestige_motors.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize extensions
@@ -53,16 +62,34 @@ class Car(db.Model):
     price = db.Column(db.Float)
     horsepower = db.Column(db.Integer)
     description = db.Column(db.Text)
-    image_url = db.Column(db.String(500))
+    image_url = db.Column(db.String(500))  # Main image
     status = db.Column(db.String(20), default='available')  # available, sold, reserved
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Additional specifications
+    engine = db.Column(db.String(100))  # e.g., "4.4L V8 Twin-Turbo"
+    transmission = db.Column(db.String(50), default='Automatic')
+    fuel_type = db.Column(db.String(30), default='Petrol')
+    mileage = db.Column(db.Integer, default=0)  # in km
+    exterior_color = db.Column(db.String(50))
+    interior_color = db.Column(db.String(50))
+    top_speed = db.Column(db.Integer)  # km/h
+    acceleration = db.Column(db.Float)  # 0-100 km/h in seconds
+    features = db.Column(db.Text)  # comma-separated features
     
     # Relationships
     inquiries = db.relationship('Inquiry', backref='car', lazy=True)
     favorites = db.relationship('Favorite', backref='car', lazy=True)
+    images = db.relationship('CarImage', backref='car', lazy=True, cascade='all, delete-orphan')
 
     def __repr__(self):
         return f'<Car {self.name}>'
+    
+    def get_features_list(self):
+        """Return features as a list"""
+        if self.features:
+            return [f.strip() for f in self.features.split(',') if f.strip()]
+        return []
 
     def to_dict(self):
         return {
@@ -77,6 +104,19 @@ class Car(db.Model):
             'image_url': self.image_url,
             'status': self.status
         }
+
+
+class CarImage(db.Model):
+    """Multiple images for a car"""
+    id = db.Column(db.Integer, primary_key=True)
+    car_id = db.Column(db.Integer, db.ForeignKey('car.id'), nullable=False)
+    image_url = db.Column(db.String(500), nullable=False)
+    is_primary = db.Column(db.Boolean, default=False)
+    order = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<CarImage {self.id} for Car {self.car_id}>'
 
 
 class Inquiry(db.Model):
@@ -146,6 +186,16 @@ def admin_required(f):
     return decorated_function
 
 
+def api_login_required(f):
+    """Decorator for API routes - returns JSON instead of redirect"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return jsonify({'status': 'error', 'message': 'Login required'}), 401
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 # ============================================
 # ROUTES - MAIN PAGES
 # ============================================
@@ -153,7 +203,7 @@ def admin_required(f):
 @app.route('/')
 def index():
     """Homepage"""
-    cars = Car.query.filter_by(status='available').limit(6).all()
+    cars = Car.query.filter_by(status='available').order_by(Car.created_at.desc()).all()
     return render_template('index.html', cars=cars)
 
 
@@ -366,7 +416,7 @@ def submit_contact():
 # ============================================
 
 @app.route('/api/favorite/toggle/<int:car_id>', methods=['POST'])
-@login_required
+@api_login_required
 def toggle_favorite(car_id):
     """Toggle favorite status for a car"""
     car = Car.query.get_or_404(car_id)
@@ -397,7 +447,7 @@ def cart():
 
 
 @app.route('/api/cart/add/<int:car_id>', methods=['POST'])
-@login_required
+@api_login_required
 def add_to_cart(car_id):
     """Add car to cart"""
     car = Car.query.get_or_404(car_id)
@@ -420,7 +470,7 @@ def add_to_cart(car_id):
 
 
 @app.route('/api/cart/remove/<int:car_id>', methods=['POST'])
-@login_required
+@api_login_required
 def remove_from_cart(car_id):
     """Remove car from cart"""
     cart_item = CartItem.query.filter_by(user_id=current_user.id, car_id=car_id).first()
@@ -435,46 +485,109 @@ def remove_from_cart(car_id):
 
 
 @app.route('/api/cart/count')
-@login_required
+@api_login_required
 def cart_count():
     """Get cart item count"""
     count = CartItem.query.filter_by(user_id=current_user.id).count()
     return jsonify({'count': count})
 
 
-@app.route('/cart/checkout', methods=['POST'])
+@app.route('/checkout', methods=['GET', 'POST'])
 @login_required
 def checkout():
-    """Process checkout - create inquiry for all cart items"""
+    """Checkout page with customer form"""
     cart_items = CartItem.query.filter_by(user_id=current_user.id).all()
     
     if not cart_items:
         flash('Your cart is empty.', 'danger')
         return redirect(url_for('cart'))
     
-    # Create inquiry for the order
-    car_names = ', '.join([item.car.name for item in cart_items])
     total = sum(item.car.price for item in cart_items)
     
-    inquiry = Inquiry(
-        user_id=current_user.id,
-        full_name=current_user.full_name or current_user.username,
-        email=current_user.email,
-        phone=current_user.phone,
-        vehicle_interest=car_names,
-        message=f"Purchase request for: {car_names}. Total: ${total:,.0f}"
-    )
+    if request.method == 'POST':
+        # Get form data
+        full_name = request.form.get('full_name')
+        email = request.form.get('email')
+        phone = request.form.get('phone')
+        address = request.form.get('address')
+        city = request.form.get('city')
+        message = request.form.get('message', '')
+        payment_method = request.form.get('payment_method')
+        
+        # Validation
+        if not all([full_name, email, phone, address, city, payment_method]):
+            flash('Please fill in all required fields.', 'danger')
+            return render_template('checkout.html', cart_items=cart_items, total=total)
+        
+        # Validate card details if card payment is selected
+        if payment_method == 'card':
+            card_number = request.form.get('card_number', '').replace(' ', '')
+            card_holder = request.form.get('card_holder', '')
+            card_expiry = request.form.get('card_expiry', '')
+            card_cvv = request.form.get('card_cvv', '')
+            
+            if not all([card_number, card_holder, card_expiry, card_cvv]):
+                flash('Please fill in all card details.', 'danger')
+                return render_template('checkout.html', cart_items=cart_items, total=total)
+        
+        # Create inquiry for the order
+        car_names = ', '.join([item.car.name for item in cart_items])
+        
+        # Build payment information string
+        if payment_method == 'cash':
+            payment_info = "Payment Method: Cash"
+        else:
+            card_number = request.form.get('card_number', '').replace(' ', '')
+            # Mask card number (show only last 4 digits)
+            masked_card = '**** **** **** ' + card_number[-4:] if len(card_number) >= 4 else '****'
+            payment_info = f"""Payment Method: Card
+- Card Number: {masked_card}
+- Card Holder: {request.form.get('card_holder', '')}
+- Expiry: {request.form.get('card_expiry', '')}
+- CVV: ***"""
+        
+        order_message = f"""Purchase request:
+- Vehicles: {car_names}
+- Total: ${total:,.0f}
+- Delivery Address: {address}, {city}
+- {payment_info}
+- Additional notes: {message if message else 'None'}"""
+        
+        inquiry = Inquiry(
+            user_id=current_user.id,
+            full_name=full_name,
+            email=email,
+            phone=phone,
+            vehicle_interest=car_names,
+            message=order_message
+        )
+        
+        db.session.add(inquiry)
+        
+        # Clear the cart
+        for item in cart_items:
+            db.session.delete(item)
+        
+        db.session.commit()
+        
+        # Redirect to confirmation page
+        return redirect(url_for('order_confirmation', inquiry_id=inquiry.id))
     
-    db.session.add(inquiry)
+    return render_template('checkout.html', cart_items=cart_items, total=total)
+
+
+@app.route('/order-confirmation/<int:inquiry_id>')
+@login_required
+def order_confirmation(inquiry_id):
+    """Order confirmation page"""
+    inquiry = Inquiry.query.get_or_404(inquiry_id)
     
-    # Clear the cart
-    for item in cart_items:
-        db.session.delete(item)
+    # Ensure user can only see their own orders
+    if inquiry.user_id != current_user.id:
+        flash('Access denied.', 'danger')
+        return redirect(url_for('index'))
     
-    db.session.commit()
-    
-    flash('Thank you for your order! Our team will contact you shortly to complete the purchase.', 'success')
-    return redirect(url_for('profile'))
+    return render_template('order_confirmation.html', inquiry=inquiry)
 
 
 # ============================================
@@ -513,22 +626,52 @@ def admin_cars():
 def admin_add_car():
     """Add new car"""
     if request.method == 'POST':
-        car = Car(
-            name=request.form.get('name'),
-            brand=request.form.get('brand'),
-            model=request.form.get('model'),
-            year=int(request.form.get('year')),
-            price=float(request.form.get('price')),
-            horsepower=int(request.form.get('horsepower')),
-            description=request.form.get('description'),
-            image_url=request.form.get('image_url'),
-            status=request.form.get('status', 'available')
-        )
-        
-        db.session.add(car)
-        db.session.commit()
-        flash('Car added successfully!', 'success')
-        return redirect(url_for('admin_cars'))
+        try:
+            # Get optional integer/float fields with defaults
+            horsepower = request.form.get('horsepower')
+            top_speed = request.form.get('top_speed')
+            acceleration = request.form.get('acceleration')
+            mileage = request.form.get('mileage')
+            
+            car = Car(
+                name=request.form.get('name'),
+                brand=request.form.get('brand'),
+                model=request.form.get('model'),
+                year=int(request.form.get('year')),
+                price=float(request.form.get('price')),
+                horsepower=int(horsepower) if horsepower else None,
+                description=request.form.get('description'),
+                image_url=request.form.get('image_url'),
+                status=request.form.get('status', 'available'),
+                engine=request.form.get('engine'),
+                transmission=request.form.get('transmission', 'Automatic'),
+                fuel_type=request.form.get('fuel_type', 'Petrol'),
+                mileage=int(mileage) if mileage else 0,
+                exterior_color=request.form.get('exterior_color'),
+                interior_color=request.form.get('interior_color'),
+                top_speed=int(top_speed) if top_speed else None,
+                acceleration=float(acceleration) if acceleration else None,
+                features=request.form.get('features')
+            )
+            
+            db.session.add(car)
+            db.session.commit()
+            
+            # Add additional images
+            additional_images = request.form.getlist('additional_images[]')
+            for idx, img_url in enumerate(additional_images):
+                if img_url.strip():
+                    car_image = CarImage(car_id=car.id, image_url=img_url.strip(), order=idx)
+                    db.session.add(car_image)
+            
+            db.session.commit()
+            flash('Car added successfully!', 'success')
+            return redirect(url_for('admin_edit_car', car_id=car.id))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error adding car: {str(e)}', 'danger')
+            print(f"Error adding car: {e}")
+            return render_template('admin/car_form.html', car=None)
     
     return render_template('admin/car_form.html', car=None)
 
@@ -541,21 +684,91 @@ def admin_edit_car(car_id):
     car = Car.query.get_or_404(car_id)
     
     if request.method == 'POST':
-        car.name = request.form.get('name')
-        car.brand = request.form.get('brand')
-        car.model = request.form.get('model')
-        car.year = int(request.form.get('year'))
-        car.price = float(request.form.get('price'))
-        car.horsepower = int(request.form.get('horsepower'))
-        car.description = request.form.get('description')
-        car.image_url = request.form.get('image_url')
-        car.status = request.form.get('status')
-        
-        db.session.commit()
-        flash('Car updated successfully!', 'success')
-        return redirect(url_for('admin_cars'))
+        try:
+            # Get optional integer/float fields
+            horsepower = request.form.get('horsepower')
+            top_speed = request.form.get('top_speed')
+            acceleration = request.form.get('acceleration')
+            mileage = request.form.get('mileage')
+            
+            car.name = request.form.get('name')
+            car.brand = request.form.get('brand')
+            car.model = request.form.get('model')
+            car.year = int(request.form.get('year'))
+            car.price = float(request.form.get('price'))
+            car.horsepower = int(horsepower) if horsepower else car.horsepower
+            car.description = request.form.get('description')
+            car.image_url = request.form.get('image_url')
+            car.status = request.form.get('status')
+            car.engine = request.form.get('engine')
+            car.transmission = request.form.get('transmission', 'Automatic')
+            car.fuel_type = request.form.get('fuel_type', 'Petrol')
+            car.mileage = int(mileage) if mileage else 0
+            car.exterior_color = request.form.get('exterior_color')
+            car.interior_color = request.form.get('interior_color')
+            car.top_speed = int(top_speed) if top_speed else car.top_speed
+            car.acceleration = float(acceleration) if acceleration else car.acceleration
+            car.features = request.form.get('features')
+            
+            db.session.commit()
+            flash('Car updated successfully!', 'success')
+            return redirect(url_for('admin_edit_car', car_id=car.id))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error updating car: {str(e)}', 'danger')
+            print(f"Error updating car: {e}")
     
     return render_template('admin/car_form.html', car=car)
+
+
+@app.route('/admin/car/<int:car_id>/add-image', methods=['POST'])
+@login_required
+@admin_required
+def admin_add_car_image(car_id):
+    """Add image to car"""
+    car = Car.query.get_or_404(car_id)
+    image_url = request.form.get('image_url')
+    
+    if image_url and image_url.strip():
+        # Get the next order number
+        max_order = db.session.query(db.func.max(CarImage.order)).filter_by(car_id=car_id).scalar() or 0
+        car_image = CarImage(car_id=car_id, image_url=image_url.strip(), order=max_order + 1)
+        db.session.add(car_image)
+        db.session.commit()
+        flash('Image added successfully!', 'success')
+    else:
+        flash('Please provide an image URL.', 'danger')
+    
+    return redirect(url_for('admin_edit_car', car_id=car_id))
+
+
+@app.route('/admin/car/image/<int:image_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def admin_delete_car_image(image_id):
+    """Delete car image"""
+    image = CarImage.query.get_or_404(image_id)
+    car_id = image.car_id
+    db.session.delete(image)
+    db.session.commit()
+    flash('Image deleted successfully!', 'success')
+    return redirect(url_for('admin_edit_car', car_id=car_id))
+
+
+@app.route('/admin/car/image/<int:image_id>/set-primary', methods=['POST'])
+@login_required
+@admin_required
+def admin_set_primary_image(image_id):
+    """Set image as primary (main) image"""
+    image = CarImage.query.get_or_404(image_id)
+    car = image.car
+    
+    # Update car's main image_url
+    car.image_url = image.image_url
+    db.session.commit()
+    
+    flash('Main image updated!', 'success')
+    return redirect(url_for('admin_edit_car', car_id=car.id))
 
 
 @app.route('/admin/car/delete/<int:car_id>', methods=['POST'])
@@ -712,4 +925,6 @@ def currency_filter(value):
 
 if __name__ == '__main__':
     init_db()
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Only run in debug mode locally, not in production
+    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    app.run(debug=debug_mode, host='0.0.0.0', port=int(os.environ.get('PORT', 5001)))

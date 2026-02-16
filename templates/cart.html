@@ -150,18 +150,6 @@
     </nav>
   </header>
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <div class="flash-messages">
-        {% for category, message in messages %}
-          <div class="flash-message flash-{{ category }}">
-            {{ message }}
-            <button class="close-flash" onclick="this.parentElement.remove()">×</button>
-          </div>
-        {% endfor %}
-      </div>
-    {% endif %}
-  {% endwith %}
 
   <main>
     <div class="cart-container">
@@ -195,9 +183,7 @@
           </div>
           <div class="cart-actions">
             <a href="{{ url_for('cars') }}" class="btn">Continue Shopping</a>
-            <form action="{{ url_for('checkout') }}" method="POST" style="flex: 1;">
-              <button type="submit" class="btn btn-primary" style="width: 100%;">Proceed to Checkout</button>
-            </form>
+            <a href="{{ url_for('checkout') }}" class="btn btn-primary" style="flex: 1; text-align: center;">Proceed to Checkout</a>
           </div>
         </div>
       {% else %}

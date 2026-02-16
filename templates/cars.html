@@ -28,18 +28,6 @@
     </nav>
   </header>
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <div class="flash-messages">
-        {% for category, message in messages %}
-          <div class="flash-message flash-{{ category }}">
-            {{ message }}
-            <button class="close-flash" onclick="this.parentElement.remove()">×</button>
-          </div>
-        {% endfor %}
-      </div>
-    {% endif %}
-  {% endwith %}
 
   <main>
     <section id="cars">
@@ -53,22 +41,21 @@
           {% for car in cars %}
           <article class="car-card">
             {% if current_user.is_authenticated %}
-            <button class="favorite-btn" onclick="toggleFavorite({{ car.id }})">
+            <button class="favorite-btn" onclick="event.stopPropagation(); toggleFavorite({{ car.id }}, event)">
               <span class="heart-icon">♡</span>
             </button>
             {% endif %}
             
-            <img src="{{ car.image_url }}" alt="{{ car.name }}" class="car-image">
-            <div class="car-content">
-              <h3>{{ car.name }}</h3>
-              <p class="car-price">{{ car.price|currency }}</p>
-              <div class="car-specs">
-                <span><strong>Year:</strong> {{ car.year }}</span>
-                <span><strong>HP:</strong> {{ car.horsepower }}</span>
+            <a href="{{ url_for('car_detail', car_id=car.id) }}" class="car-card-link">
+              <img src="{{ car.image_url }}" alt="{{ car.name }}" class="car-image">
+              <div class="car-content">
+                <h3>{{ car.name }}</h3>
+                <p class="car-price">{{ car.price|currency }}</p>
+                <div class="car-buttons">
+                  <span class="btn">View Details</span>
+                </div>
               </div>
-              <p>{{ car.description[:150] }}...</p>
-              <a href="{{ url_for('car_detail', car_id=car.id) }}" class="btn">View Details</a>
-            </div>
+            </a>
           </article>
           {% else %}
           <p style="text-align: center; grid-column: 1/-1;">No cars available at the moment.</p>
@@ -84,21 +71,27 @@
 
   <script src="{{ url_for('static', filename='js/script.js') }}"></script>
   <script>
-    function toggleFavorite(carId) {
+    function toggleFavorite(carId, e) {
       fetch(`/api/favorite/toggle/${carId}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin'
       })
-      .then(response => response.json())
+      .then(response => {
+        if (response.status === 401) {
+          window.location.href = '{{ url_for("login") }}';
+          return null;
+        }
+        return response.json();
+      })
       .then(data => {
-        const btn = event.target.closest('.favorite-btn');
+        if (!data) return;
+        const btn = e ? e.target.closest('.favorite-btn') : event.target.closest('.favorite-btn');
         const heart = btn.querySelector('.heart-icon');
         if (data.status === 'added') {
           heart.textContent = '♥';
-          heart.style.color = '#c9a24d';
-        } else {
+        } else if (data.status === 'removed') {
           heart.textContent = '♡';
-          heart.style.color = '#c9a24d';
         }
       })
       .catch(error => console.error('Error:', error));

@@ -6,69 +6,224 @@
   <title>{{ car.name }} - PRESTIGE MOTORS</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <style>
-    .car-detail {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: var(--spacing-xl);
-      max-width: 1200px;
+    .car-detail-container {
+      max-width: 1400px;
       margin: 0 auto;
       padding: var(--spacing-xl) var(--spacing-lg);
     }
-    .car-detail-image {
+    
+    /* Back Button */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--color-light-gray);
+      margin-bottom: var(--spacing-lg);
+      font-size: 0.95rem;
+      transition: color 0.3s;
+    }
+    .back-link:hover {
+      color: var(--color-gold);
+    }
+    
+    /* Header Section */
+    .car-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--spacing-lg);
+      flex-wrap: wrap;
+      gap: var(--spacing-md);
+    }
+    .car-header h1 {
+      color: var(--color-white);
+      margin-bottom: 5px;
+    }
+    .car-header .car-subtitle {
+      color: var(--color-light-gray);
+      font-size: 1.1rem;
+    }
+    .car-header .car-price {
+      font-size: 2.5rem;
+      color: var(--color-gold);
+      font-weight: 600;
+    }
+    .car-status {
+      display: inline-block;
+      padding: 5px 15px;
+      background: rgba(100, 200, 100, 0.2);
+      color: #64c864;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 10px;
+    }
+    
+    /* Gallery Section */
+    .gallery-section {
+      margin-bottom: var(--spacing-xl);
+    }
+    .main-image-container {
+      position: relative;
+      margin-bottom: var(--spacing-md);
+      overflow: hidden;
+      border: 1px solid var(--color-medium-gray);
+    }
+    .main-image {
       width: 100%;
       height: 500px;
       object-fit: cover;
-      border: 1px solid var(--color-medium-gray);
+      transition: transform 0.5s;
     }
-    .car-detail-info h1 {
+    .main-image-container:hover .main-image {
+      transform: scale(1.02);
+    }
+    .thumbnail-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--spacing-sm);
+    }
+    .thumbnail {
+      height: 100px;
+      object-fit: cover;
+      border: 2px solid var(--color-medium-gray);
+      cursor: pointer;
+      transition: all 0.3s;
+      opacity: 0.7;
+    }
+    .thumbnail:hover, .thumbnail.active {
+      border-color: var(--color-gold);
+      opacity: 1;
+    }
+    
+    /* Content Grid */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: var(--spacing-xl);
+    }
+    
+    /* Specifications */
+    .section-title {
       color: var(--color-gold);
-      margin-bottom: var(--spacing-sm);
-    }
-    .car-detail-price {
-      font-size: 2rem;
-      color: var(--color-white);
+      font-size: 1.3rem;
       margin-bottom: var(--spacing-md);
+      padding-bottom: var(--spacing-sm);
+      border-bottom: 1px solid var(--color-medium-gray);
+      text-align: left;
     }
-    .car-specs-grid {
+    .section-title::after {
+      display: none;
+    }
+    
+    .specs-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: var(--spacing-md);
-      margin-bottom: var(--spacing-lg);
-      padding: var(--spacing-md);
-      background-color: var(--color-dark-gray);
+      margin-bottom: var(--spacing-xl);
+    }
+    .spec-card {
+      background: var(--color-dark-gray);
       border: 1px solid var(--color-medium-gray);
-    }
-    .spec-item {
+      padding: var(--spacing-md);
       text-align: center;
+      transition: all 0.3s;
     }
-    .spec-item label {
-      display: block;
-      color: var(--color-gold);
+    .spec-card:hover {
+      border-color: var(--color-gold);
+    }
+    .spec-card .spec-icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+    .spec-card .spec-label {
+      color: var(--color-light-gray);
       font-size: 0.85rem;
       text-transform: uppercase;
       letter-spacing: 1px;
       margin-bottom: 5px;
     }
-    .spec-item span {
-      font-size: 1.2rem;
+    .spec-card .spec-value {
       color: var(--color-white);
+      font-size: 1.3rem;
+      font-weight: 500;
     }
-    .car-description {
-      line-height: 1.8;
-      margin-bottom: var(--spacing-lg);
+    
+    /* Description */
+    .description-section {
+      margin-bottom: var(--spacing-xl);
     }
-    .car-actions {
+    .description-text {
+      color: var(--color-light-gray);
+      line-height: 1.9;
+      font-size: 1.05rem;
+    }
+    
+    /* Features */
+    .features-section {
+      margin-bottom: var(--spacing-xl);
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--spacing-sm);
+    }
+    .feature-item {
       display: flex;
-      gap: var(--spacing-md);
+      align-items: center;
+      gap: 10px;
+      padding: var(--spacing-sm);
+      background: var(--color-dark-gray);
+      border: 1px solid var(--color-medium-gray);
     }
+    .feature-item .check-icon {
+      color: var(--color-gold);
+      font-size: 1.2rem;
+    }
+    .feature-item span {
+      color: var(--color-off-white);
+      font-size: 0.95rem;
+    }
+    
+    /* Sidebar */
+    .sidebar {
+      position: sticky;
+      top: 100px;
+    }
+    .action-card {
+      background: var(--color-dark-gray);
+      border: 1px solid var(--color-medium-gray);
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-md);
+    }
+    .action-card h3 {
+      color: var(--color-white);
+      margin-bottom: var(--spacing-md);
+      font-size: 1.2rem;
+    }
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+    }
+    .action-buttons .btn {
+      width: 100%;
+      text-align: center;
+    }
+    
     .favorite-btn-large {
       background: transparent;
       border: 2px solid var(--color-gold);
       color: var(--color-gold);
-      padding: 1rem 2rem;
+      padding: 1rem;
       cursor: pointer;
-      font-size: 1.2rem;
+      font-size: 1rem;
       transition: all 0.3s ease;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
     }
     .favorite-btn-large:hover {
       background: var(--color-gold);
@@ -78,12 +233,48 @@
       background: var(--color-gold);
       color: var(--color-black);
     }
-    @media (max-width: 767px) {
-      .car-detail {
+    
+    /* Dealer Info */
+    .dealer-info {
+      padding: var(--spacing-md);
+      background: var(--color-dark-gray);
+      border: 1px solid var(--color-medium-gray);
+    }
+    .dealer-info h4 {
+      color: var(--color-gold);
+      margin-bottom: var(--spacing-sm);
+      font-size: 1rem;
+    }
+    .dealer-info p {
+      color: var(--color-light-gray);
+      font-size: 0.9rem;
+      margin-bottom: 5px;
+    }
+    
+    @media (max-width: 1024px) {
+      .content-grid {
         grid-template-columns: 1fr;
       }
-      .car-detail-image {
+      .sidebar {
+        position: static;
+      }
+    }
+    
+    @media (max-width: 767px) {
+      .main-image {
         height: 300px;
+      }
+      .thumbnail-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+      .thumbnail {
+        height: 60px;
+      }
+      .specs-grid, .features-grid {
+        grid-template-columns: 1fr;
+      }
+      .car-header {
+        flex-direction: column;
       }
     }
   </style>
@@ -97,6 +288,7 @@
         <li><a href="{{ url_for('cars') }}">Cars</a></li>
         <li><a href="{{ url_for('index') }}#contact">Contact</a></li>
         {% if current_user.is_authenticated %}
+          <li><a href="{{ url_for('cart') }}">Cart</a></li>
           <li><a href="{{ url_for('profile') }}">Profile</a></li>
           {% if current_user.is_admin %}
             <li><a href="{{ url_for('admin_dashboard') }}">Admin</a></li>
@@ -110,57 +302,161 @@
     </nav>
   </header>
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <div class="flash-messages">
-        {% for category, message in messages %}
-          <div class="flash-message flash-{{ category }}">
-            {{ message }}
-            <button class="close-flash" onclick="this.parentElement.remove()">×</button>
-          </div>
-        {% endfor %}
-      </div>
-    {% endif %}
-  {% endwith %}
 
   <main>
-    <div class="car-detail">
-      <div>
-        <img src="{{ car.image_url }}" alt="{{ car.name }}" class="car-detail-image">
-      </div>
-      <div class="car-detail-info">
-        <h1>{{ car.name }}</h1>
-        <p class="car-detail-price">{{ car.price|currency }}</p>
-        
-        <div class="car-specs-grid">
-          <div class="spec-item">
-            <label>Brand</label>
-            <span>{{ car.brand }}</span>
-          </div>
-          <div class="spec-item">
-            <label>Model</label>
-            <span>{{ car.model }}</span>
-          </div>
-          <div class="spec-item">
-            <label>Year</label>
-            <span>{{ car.year }}</span>
-          </div>
-          <div class="spec-item">
-            <label>Horsepower</label>
-            <span>{{ car.horsepower }} HP</span>
-          </div>
+    <div class="car-detail-container">
+      <!-- Back Link -->
+      <a href="{{ url_for('cars') }}" class="back-link">
+        ← Back to Collection
+      </a>
+      
+      <!-- Header -->
+      <div class="car-header">
+        <div>
+          <h1>{{ car.name }}</h1>
+          <p class="car-subtitle">{{ car.brand }} · {{ car.model }} · {{ car.year }}</p>
+          <span class="car-status">{{ car.status }}</span>
         </div>
-
-        <p class="car-description">{{ car.description }}</p>
-
-        <div class="car-actions">
-          <a href="{{ url_for('index') }}#contact" class="btn">Inquire Now</a>
-          {% if current_user.is_authenticated %}
-          <button class="btn btn-primary" onclick="addToCart({{ car.id }})">Add to Cart</button>
-          <button class="favorite-btn-large {% if is_favorite %}active{% endif %}" onclick="toggleFavorite({{ car.id }})">
-            {% if is_favorite %}♥{% else %}♡{% endif %}
-          </button>
+        <div style="text-align: right;">
+          <p class="car-price">{{ car.price|currency }}</p>
+        </div>
+      </div>
+      
+      <!-- Gallery -->
+      <div class="gallery-section">
+        <div class="main-image-container">
+          <img src="{{ car.image_url }}" alt="{{ car.name }}" class="main-image" id="mainImage">
+        </div>
+        {% if car.images|length > 0 %}
+        <div class="thumbnail-grid">
+          <img src="{{ car.image_url }}" alt="Main" class="thumbnail active" onclick="changeImage(this)">
+          {% for img in car.images %}
+          <img src="{{ img.image_url }}" alt="View {{ loop.index + 1 }}" class="thumbnail" onclick="changeImage(this)">
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      
+      <!-- Content Grid -->
+      <div class="content-grid">
+        <div class="main-content">
+          <!-- Specifications -->
+          <h2 class="section-title">Specifications</h2>
+          <div class="specs-grid">
+            {% if car.horsepower %}
+            <div class="spec-card">
+              <div class="spec-icon">🏎️</div>
+              <div class="spec-label">Horsepower</div>
+              <div class="spec-value">{{ car.horsepower }} HP</div>
+            </div>
+            {% endif %}
+            <div class="spec-card">
+              <div class="spec-icon">📅</div>
+              <div class="spec-label">Year</div>
+              <div class="spec-value">{{ car.year }}</div>
+            </div>
+            <div class="spec-card">
+              <div class="spec-icon">⚡</div>
+              <div class="spec-label">0-100 km/h</div>
+              <div class="spec-value">{% if car.acceleration %}{{ car.acceleration }}s{% else %}{{ (3.0 + (700 - (car.horsepower or 500)) * 0.01)|round(1) }}s{% endif %}</div>
+            </div>
+            <div class="spec-card">
+              <div class="spec-icon">💨</div>
+              <div class="spec-label">Top Speed</div>
+              <div class="spec-value">{% if car.top_speed %}{{ car.top_speed }}{% else %}{{ 250 + ((car.horsepower or 500) - 400) // 3 }}{% endif %} km/h</div>
+            </div>
+            <div class="spec-card">
+              <div class="spec-icon">⚙️</div>
+              <div class="spec-label">Transmission</div>
+              <div class="spec-value">{{ car.transmission or 'Automatic' }}</div>
+            </div>
+            <div class="spec-card">
+              <div class="spec-icon">⛽</div>
+              <div class="spec-label">Fuel Type</div>
+              <div class="spec-value">{{ car.fuel_type or 'Petrol' }}</div>
+            </div>
+            {% if car.engine %}
+            <div class="spec-card">
+              <div class="spec-icon">🔧</div>
+              <div class="spec-label">Engine</div>
+              <div class="spec-value">{{ car.engine }}</div>
+            </div>
+            {% endif %}
+            {% if car.mileage %}
+            <div class="spec-card">
+              <div class="spec-icon">🚧</div>
+              <div class="spec-label">Mileage</div>
+              <div class="spec-value">{{ '{:,}'.format(car.mileage) }} km</div>
+            </div>
+            {% endif %}
+            {% if car.exterior_color %}
+            <div class="spec-card">
+              <div class="spec-icon">🎨</div>
+              <div class="spec-label">Exterior</div>
+              <div class="spec-value">{{ car.exterior_color }}</div>
+            </div>
+            {% endif %}
+            {% if car.interior_color %}
+            <div class="spec-card">
+              <div class="spec-icon">💺</div>
+              <div class="spec-label">Interior</div>
+              <div class="spec-value">{{ car.interior_color }}</div>
+            </div>
+            {% endif %}
+          </div>
+          
+          <!-- Description -->
+          <div class="description-section">
+            <h2 class="section-title">Description</h2>
+            <p class="description-text">{{ car.description }}</p>
+            <p class="description-text" style="margin-top: 15px;">
+              This exceptional {{ car.brand }} {{ car.model }} represents the pinnacle of automotive engineering. 
+              With its powerful {{ car.horsepower }} horsepower engine, this vehicle delivers an exhilarating 
+              driving experience while maintaining the refined comfort expected from a luxury automobile.
+            </p>
+          </div>
+          
+          <!-- Features -->
+          {% if car.get_features_list() %}
+          <div class="features-section">
+            <h2 class="section-title">Features & Equipment</h2>
+            <div class="features-grid">
+              {% for feature in car.get_features_list() %}
+              <div class="feature-item">
+                <span class="check-icon">✓</span>
+                <span>{{ feature }}</span>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
           {% endif %}
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="sidebar">
+          <div class="action-card">
+            <h3>Interested in this vehicle?</h3>
+            <div class="action-buttons">
+              <a href="{{ url_for('index') }}#contact" class="btn btn-primary">Contact Us</a>
+              {% if current_user.is_authenticated %}
+              <button class="btn" onclick="addToCart({{ car.id }})">Add to Cart</button>
+              <button class="favorite-btn-large {% if is_favorite %}active{% endif %}" onclick="toggleFavorite({{ car.id }})">
+                <span>{% if is_favorite %}♥{% else %}♡{% endif %}</span>
+                <span>{% if is_favorite %}In Favorites{% else %}Add to Favorites{% endif %}</span>
+              </button>
+              {% else %}
+              <a href="{{ url_for('login') }}" class="btn">Login to Purchase</a>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="dealer-info">
+            <h4>Prestige Motors</h4>
+            <p>📍 1234 Luxury Boulevard, Beverly Hills</p>
+            <p>📞 +1 (310) 555-PRESTIGE</p>
+            <p>📧 sales@prestigemotors.com</p>
+            <p style="margin-top: 15px; color: var(--color-gold);">Mon-Sat: 9AM - 7PM</p>
+          </div>
         </div>
       </div>
     </div>
@@ -171,6 +467,16 @@
   </footer>
 
   <script>
+    // Image Gallery
+    function changeImage(thumbnail) {
+      const mainImage = document.getElementById('mainImage');
+      mainImage.src = thumbnail.src.replace('w=400&h=300', 'w=1200&h=800');
+      
+      document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+      thumbnail.classList.add('active');
+    }
+    
+    // Toggle Favorite
     function toggleFavorite(carId) {
       fetch(`/api/favorite/toggle/${carId}`, {
         method: 'POST',
@@ -180,18 +486,17 @@
       .then(data => {
         const btn = document.querySelector('.favorite-btn-large');
         if (data.status === 'added') {
-          btn.innerHTML = '♥';
+          btn.innerHTML = '<span>♥</span><span>In Favorites</span>';
           btn.classList.add('active');
-          showNotification('Added to favorites!', 'success');
         } else {
-          btn.innerHTML = '♡';
+          btn.innerHTML = '<span>♡</span><span>Add to Favorites</span>';
           btn.classList.remove('active');
-          showNotification('Removed from favorites', 'info');
         }
       })
       .catch(error => console.error('Error:', error));
     }
 
+    // Add to Cart
     function addToCart(carId) {
       fetch(`/api/cart/add/${carId}`, {
         method: 'POST',
@@ -199,31 +504,13 @@
       })
       .then(response => response.json())
       .then(data => {
-        if (data.status === 'added') {
-          showNotification('Added to cart!', 'success');
-        } else if (data.status === 'exists') {
-          showNotification('Already in cart', 'info');
-        } else {
-          showNotification(data.message, 'error');
-        }
+        // Cart updated silently
       })
       .catch(error => {
         console.error('Error:', error);
-        showNotification('Error adding to cart', 'error');
       });
     }
 
-    function showNotification(message, type = 'info') {
-      const notification = document.createElement('div');
-      notification.className = `notification notification-${type}`;
-      notification.textContent = message;
-      document.body.appendChild(notification);
-      setTimeout(() => notification.classList.add('show'), 100);
-      setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => notification.remove(), 300);
-      }, 3000);
-    }
   </script>
 </body>
 </html>
