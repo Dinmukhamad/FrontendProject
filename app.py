@@ -920,6 +920,33 @@ def currency_filter(value):
 
 
 # ============================================
+# AUTO-INITIALIZE DATABASE ON STARTUP
+# ============================================
+
+# Initialize database when app starts (for production deployment)
+# This runs when gunicorn starts the app
+with app.app_context():
+    try:
+        # Check if database is initialized by trying to query a table
+        from sqlalchemy import inspect
+        inspector = inspect(db.engine)
+        tables = inspector.get_table_names()
+        if not tables:
+            # Database tables don't exist, initialize them
+            print("Database not initialized. Creating tables...")
+            init_db()
+        else:
+            print(f"Database already initialized with {len(tables)} tables.")
+    except Exception as e:
+        # If we can't check, try to initialize anyway
+        print(f"Checking database status failed: {e}. Attempting initialization...")
+        try:
+            init_db()
+        except Exception as init_error:
+            print(f"Initialization error (may be normal if tables exist): {init_error}")
+
+
+# ============================================
 # RUN APPLICATION
 # ============================================
 
