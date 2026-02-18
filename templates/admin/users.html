@@ -197,6 +197,7 @@
               <th>Registered</th>
               <th>Inquiries</th>
               <th>Favorites</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -217,6 +218,18 @@
               <td class="user-date">{{ user.created_at.strftime('%b %d, %Y') }}</td>
               <td class="user-date">{{ user.inquiries|length }}</td>
               <td class="user-date">{{ user.favorites|length }}</td>
+              <td>
+                {% if user.id != current_user.id %}
+                <form action="{{ url_for('admin_toggle_admin', user_id=user.id) }}" method="POST" style="display:inline;"
+                      onsubmit="return confirm('{% if user.is_admin %}Remove admin rights from {{ user.username }}?{% else %}Grant admin rights to {{ user.username }}?{% endif %}')">
+                  <button type="submit" style="padding:6px 14px; font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; cursor:pointer; background:transparent; border:1px solid {% if user.is_admin %}#e74c3c{% else %}var(--color-gold){% endif %}; color:{% if user.is_admin %}#e74c3c{% else %}var(--color-gold){% endif %}; transition:all 0.3s ease;">
+                    {% if user.is_admin %}Revoke Admin{% else %}Make Admin{% endif %}
+                  </button>
+                </form>
+                {% else %}
+                <span style="color:var(--color-light-gray);font-size:0.85rem;">You</span>
+                {% endif %}
+              </td>
             </tr>
             {% endfor %}
           </tbody>

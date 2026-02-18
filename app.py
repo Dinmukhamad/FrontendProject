@@ -801,6 +801,22 @@ def admin_users():
     return render_template('admin/users.html', users=users)
 
 
+@app.route('/admin/user/<int:user_id>/toggle-admin', methods=['POST'])
+@login_required
+@admin_required
+def admin_toggle_admin(user_id):
+    """Toggle admin status for a user"""
+    user = User.query.get_or_404(user_id)
+    if user.id == current_user.id:
+        flash('You cannot change your own admin status.', 'danger')
+        return redirect(url_for('admin_users'))
+    user.is_admin = not user.is_admin
+    db.session.commit()
+    action = 'granted' if user.is_admin else 'revoked'
+    flash(f'Admin rights {action} for {user.username}.', 'success')
+    return redirect(url_for('admin_users'))
+
+
 # ============================================
 # DATABASE INITIALIZATION
 # ============================================
