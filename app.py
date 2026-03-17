@@ -65,6 +65,7 @@ class Car(db.Model):
     image_url = db.Column(db.String(500))  # Main image
     status = db.Column(db.String(20), default='available')  # available, sold, reserved
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    discount = db.Column(db.Integer, default=0)  # discount percentage 0-100
     
     # Additional specifications
     engine = db.Column(db.String(100))  # e.g., "4.4L V8 Twin-Turbo"
@@ -102,7 +103,8 @@ class Car(db.Model):
             'horsepower': self.horsepower,
             'description': self.description,
             'image_url': self.image_url,
-            'status': self.status
+            'status': self.status,
+            'discount': self.discount
         }
 
 
@@ -212,6 +214,16 @@ def cars():
     """All cars page"""
     all_cars = Car.query.filter_by(status='available').all()
     return render_template('cars.html', cars=all_cars)
+
+
+@app.route('/black-friday')
+def black_friday():
+    """Black Friday promotional page"""
+    all_cars = Car.query.order_by(Car.discount.desc(), Car.created_at.desc()).all()
+    brands = db.session.query(Car.brand).distinct().order_by(Car.brand).all()
+    return render_template('black_friday.html',
+                           cars=all_cars,
+                           brands=[b[0] for b in brands])
 
 
 @app.route('/car/<int:car_id>')
@@ -633,6 +645,7 @@ def admin_add_car():
             acceleration = request.form.get('acceleration')
             mileage = request.form.get('mileage')
             
+            discount_val = request.form.get('discount', '0')
             car = Car(
                 name=request.form.get('name'),
                 brand=request.form.get('brand'),
@@ -651,7 +664,8 @@ def admin_add_car():
                 interior_color=request.form.get('interior_color'),
                 top_speed=int(top_speed) if top_speed else None,
                 acceleration=float(acceleration) if acceleration else None,
-                features=request.form.get('features')
+                features=request.form.get('features'),
+                discount=int(discount_val) if discount_val else 0
             )
             
             db.session.add(car)
@@ -709,6 +723,8 @@ def admin_edit_car(car_id):
             car.top_speed = int(top_speed) if top_speed else car.top_speed
             car.acceleration = float(acceleration) if acceleration else car.acceleration
             car.features = request.form.get('features')
+            discount_val = request.form.get('discount', '0')
+            car.discount = int(discount_val) if discount_val else 0
             
             db.session.commit()
             flash('Car updated successfully!', 'success')
@@ -801,22 +817,6 @@ def admin_users():
     return render_template('admin/users.html', users=users)
 
 
-@app.route('/admin/user/<int:user_id>/toggle-admin', methods=['POST'])
-@login_required
-@admin_required
-def admin_toggle_admin(user_id):
-    """Toggle admin status for a user"""
-    user = User.query.get_or_404(user_id)
-    if user.id == current_user.id:
-        flash('You cannot change your own admin status.', 'danger')
-        return redirect(url_for('admin_users'))
-    user.is_admin = not user.is_admin
-    db.session.commit()
-    action = 'granted' if user.is_admin else 'revoked'
-    flash(f'Admin rights {action} for {user.username}.', 'success')
-    return redirect(url_for('admin_users'))
-
-
 # ============================================
 # DATABASE INITIALIZATION
 # ============================================
@@ -849,7 +849,8 @@ def init_db():
                     horsepower=625,
                     description='The ultimate expression of performance luxury. With 625 horsepower and cutting-edge technology, this sedan redefines the boundaries of speed and sophistication.',
                     image_url='https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&h=600&fit=crop',
-                    status='available'
+                    status='available',
+                    discount=15
                 ),
                 Car(
                     name='Mercedes-Benz S-Class',
@@ -860,7 +861,8 @@ def init_db():
                     horsepower=429,
                     description='The pinnacle of automotive luxury and innovation. Experience unparalleled comfort, advanced technology, and timeless elegance in every journey.',
                     image_url='https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=800&h=600&fit=crop',
-                    status='available'
+                    status='available',
+                    discount=10
                 ),
                 Car(
                     name='Porsche 911 Turbo S',
@@ -871,7 +873,8 @@ def init_db():
                     horsepower=640,
                     description='An icon perfected through generations. This masterpiece delivers breathtaking performance with 640 horsepower while maintaining the legendary 911 silhouette.',
                     image_url='https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop',
-                    status='available'
+                    status='available',
+                    discount=5
                 ),
                 Car(
                     name='Audi RS7 Sportback',
@@ -882,7 +885,8 @@ def init_db():
                     horsepower=591,
                     description='Where aggressive design meets refined luxury. The RS7 combines a powerful twin-turbo V8 with sophisticated Quattro all-wheel drive for uncompromising performance.',
                     image_url='https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&h=600&fit=crop',
-                    status='available'
+                    status='available',
+                    discount=20
                 ),
                 Car(
                     name='Lamborghini Huracán EVO',
@@ -893,7 +897,8 @@ def init_db():
                     horsepower=631,
                     description='Italian passion incarnate. The Huracán EVO delivers visceral supercar thrills with its naturally aspirated V10 engine and razor-sharp handling dynamics.',
                     image_url='https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&h=600&fit=crop',
-                    status='available'
+                    status='available',
+                    discount=8
                 ),
                 Car(
                     name='Rolls-Royce Ghost',
@@ -904,7 +909,8 @@ def init_db():
                     horsepower=563,
                     description='The epitome of luxury motoring. Handcrafted to perfection, the Ghost offers an unparalleled sanctuary of tranquility, bespoke craftsmanship, and effortless power.',
                     image_url='https://images.unsplash.com/photo-1563720360172-67b8f3dce741?w=800&h=600&fit=crop',
-                    status='available'
+                    status='available',
+                    discount=0
                 )
             ]
             
@@ -953,8 +959,8 @@ def currency_filter(value):
 with app.app_context():
     try:
         # Check if database is initialized by trying to query a table
-        from sqlalchemy import inspect
-        inspector = inspect(db.engine)
+        from sqlalchemy import inspect as sa_inspect, text
+        inspector = sa_inspect(db.engine)
         tables = inspector.get_table_names()
         if not tables:
             # Database tables don't exist, initialize them
@@ -962,6 +968,14 @@ with app.app_context():
             init_db()
         else:
             print(f"Database already initialized with {len(tables)} tables.")
+            # Migration: add 'discount' column if missing
+            if 'car' in tables:
+                existing_cols = [col['name'] for col in inspector.get_columns('car')]
+                if 'discount' not in existing_cols:
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE car ADD COLUMN discount INTEGER DEFAULT 0"))
+                        conn.commit()
+                    print("Migration: added 'discount' column to car table.")
     except Exception as e:
         # If we can't check, try to initialize anyway
         print(f"Checking database status failed: {e}. Attempting initialization...")

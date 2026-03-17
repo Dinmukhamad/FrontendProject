@@ -16,6 +16,7 @@
       <ul class="nav-links">
         <li><a href="#home" class="active">Home</a></li>
         <li><a href="#cars">Cars</a></li>
+        <li><a href="{{ url_for('black_friday') }}" class="bf-nav-link">Black Friday</a></li>
         <li><a href="#contact">Contact</a></li>
         {% if current_user.is_authenticated %}
           <li><a href="{{ url_for('cart') }}" class="cart-link">Cart <span class="cart-badge" id="cart-badge"></span></a></li>

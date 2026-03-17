@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Black Friday exclusive deals on luxury vehicles at Prestige Motors">
+  <title>Black Friday Deals - PRESTIGE MOTORS</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+</head>
+<body>
+
+  <!-- HEADER & NAVIGATION -->
+  <header>
+    <nav>
+      <a href="{{ url_for('index') }}" class="logo">PRESTIGE</a>
+      <ul class="nav-links">
+        <li><a href="{{ url_for('index') }}">Home</a></li>
+        <li><a href="{{ url_for('cars') }}">Cars</a></li>
+        <li><a href="{{ url_for('black_friday') }}" class="active bf-nav-link">Black Friday</a></li>
+        <li><a href="{{ url_for('index') }}#contact">Contact</a></li>
+        {% if current_user.is_authenticated %}
+          <li><a href="{{ url_for('cart') }}" class="cart-link">Cart <span class="cart-badge" id="cart-badge"></span></a></li>
+          <li><a href="{{ url_for('profile') }}">Profile</a></li>
+          {% if current_user.is_admin %}
+            <li><a href="{{ url_for('admin_dashboard') }}">Admin</a></li>
+          {% endif %}
+          <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        {% else %}
+          <li><a href="{{ url_for('login') }}">Login</a></li>
+          <li><a href="{{ url_for('register') }}">Register</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+  </header>
+
+
+  <main>
+    <!-- BLACK FRIDAY HERO BANNER -->
+    <section class="bf-hero">
+      <div class="bf-banner-content">
+        <div class="bf-tag">Limited Time Offer</div>
+        <h1 class="bf-title">BLACK <span class="bf-highlight">FRIDAY</span></h1>
+        <p class="bf-subtitle">Unprecedented discounts on the world's finest luxury vehicles</p>
+
+        <!-- Countdown Timer -->
+        <div class="countdown-wrapper">
+          <p class="countdown-label">Sale Ends In</p>
+          <div class="countdown" id="bf-countdown">
+            <div class="countdown-item">
+              <span class="countdown-number" id="bf-days">00</span>
+              <span class="countdown-unit">Days</span>
+            </div>
+            <div class="countdown-separator">:</div>
+            <div class="countdown-item">
+              <span class="countdown-number" id="bf-hours">00</span>
+              <span class="countdown-unit">Hrs</span>
+            </div>
+            <div class="countdown-separator">:</div>
+            <div class="countdown-item">
+              <span class="countdown-number" id="bf-minutes">00</span>
+              <span class="countdown-unit">Min</span>
+            </div>
+            <div class="countdown-separator">:</div>
+            <div class="countdown-item">
+              <span class="countdown-number" id="bf-seconds">00</span>
+              <span class="countdown-unit">Sec</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FILTERS & SORT -->
+    <section class="bf-filters-section">
+      <div class="container">
+        <div class="bf-filters">
+
+          <div class="filter-group">
+            <label for="filter-brand">Brand</label>
+            <select id="filter-brand">
+              <option value="all">All Brands</option>
+              {% for brand in brands %}
+              <option value="{{ brand }}">{{ brand }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="filter-availability">Availability</label>
+            <select id="filter-availability">
+              <option value="all">All</option>
+              <option value="available">In Stock</option>
+              <option value="reserved">Reserved</option>
+              <option value="sold">Sold</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="filter-discount">Min. Discount</label>
+            <select id="filter-discount">
+              <option value="0">Any</option>
+              <option value="5">5% and above</option>
+              <option value="10">10% and above</option>
+              <option value="15">15% and above</option>
+              <option value="20">20% and above</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="sort-by">Sort By</label>
+            <select id="sort-by">
+              <option value="default">Default</option>
+              <option value="discount-desc">Highest Discount</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="name-asc">Name: A — Z</option>
+            </select>
+          </div>
+
+          <button class="btn bf-reset-btn" id="reset-filters">Reset</button>
+        </div>
+
+        <div id="results-info" class="results-info"></div>
+      </div>
+    </section>
+
+    <!-- CARS GRID -->
+    <section class="bf-cars-section">
+      <div class="container">
+        <div class="cars-grid" id="bf-cars-grid">
+          {% for car in cars %}
+          <article class="car-card bf-car-card"
+                   data-brand="{{ car.brand }}"
+                   data-status="{{ car.status }}"
+                   data-discount="{{ car.discount }}"
+                   data-price="{{ car.price }}"
+                   data-name="{{ car.name }}">
+
+            {% if car.discount > 0 %}
+            <div class="discount-badge">-{{ car.discount }}%</div>
+            {% endif %}
+
+            {% if current_user.is_authenticated %}
+            <button class="favorite-btn {% if car.discount > 0 %}favorite-btn-shifted{% endif %}"
+                    onclick="event.stopPropagation(); toggleFavorite({{ car.id }}, event)">
+              <span class="heart-icon">♡</span>
+            </button>
+            {% endif %}
+
+            <a href="{{ url_for('car_detail', car_id=car.id) }}" class="car-card-link">
+              <img src="{{ car.image_url }}" alt="{{ car.name }}" class="car-image">
+              <div class="car-content">
+                <h3>{{ car.name }}</h3>
+
+                {% if car.discount > 0 %}
+                <p class="car-original-price">{{ car.price|currency }}</p>
+                <p class="car-price bf-discounted-price">{{ (car.price * (1 - car.discount / 100))|currency }}</p>
+                <p class="car-savings">You save {{ (car.price * car.discount / 100)|currency }}</p>
+                {% else %}
+                <p class="car-price">{{ car.price|currency }}</p>
+                {% endif %}
+
+                <div class="car-status-badge status-{{ car.status }}">{{ car.status|capitalize }}</div>
+
+                <div class="car-buttons">
+                  <span class="btn">View Details</span>
+                </div>
+              </div>
+            </a>
+          </article>
+          {% endfor %}
+        </div>
+
+        <div id="no-results" class="bf-no-results" style="display: none;">
+          <p>No vehicles match the selected filters.</p>
+          <button class="btn" onclick="resetFilters()">Clear Filters</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+
+  <!-- FOOTER -->
+  <footer>
+    <p>&copy; 2026 <span class="gold-text">Prestige Motors</span>. All Rights Reserved.</p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  <script>
+    // ================================================
+    // COUNTDOWN TIMER
+    // ================================================
+    (function initCountdown() {
+      // Black Friday 2026 ends November 29 at midnight
+      var endDate = new Date('2026-11-29T23:59:59');
+
+      function pad(n) { return String(n).padStart(2, '0'); }
+
+      function tick() {
+        var now = new Date();
+        var diff = endDate - now;
+
+        if (diff <= 0) {
+          document.getElementById('bf-countdown').innerHTML =
+            '<p class="sale-ended">The sale has ended. Stay tuned for next year!</p>';
+          return;
+        }
+
+        var days    = Math.floor(diff / 86400000);
+        var hours   = Math.floor((diff % 86400000) / 3600000);
+        var minutes = Math.floor((diff % 3600000)  / 60000);
+        var seconds = Math.floor((diff % 60000)    / 1000);
+
+        document.getElementById('bf-days').textContent    = pad(days);
+        document.getElementById('bf-hours').textContent   = pad(hours);
+        document.getElementById('bf-minutes').textContent = pad(minutes);
+        document.getElementById('bf-seconds').textContent = pad(seconds);
+      }
+
+      tick();
+      setInterval(tick, 1000);
+    })();
+
+
+    // ================================================
+    // FILTERING & SORTING (no page reload)
+    // ================================================
+    var allCards = Array.from(document.querySelectorAll('#bf-cars-grid .bf-car-card'));
+    var grid     = document.getElementById('bf-cars-grid');
+
+    function applyFilters() {
+      var brand        = document.getElementById('filter-brand').value;
+      var availability = document.getElementById('filter-availability').value;
+      var minDiscount  = parseInt(document.getElementById('filter-discount').value) || 0;
+      var sortBy       = document.getElementById('sort-by').value;
+
+      // 1. Filter
+      var visible = allCards.filter(function(card) {
+        if (brand !== 'all' && card.dataset.brand !== brand)          return false;
+        if (availability !== 'all' && card.dataset.status !== availability) return false;
+        if (parseInt(card.dataset.discount) < minDiscount)            return false;
+        return true;
+      });
+
+      // 2. Sort
+      visible.sort(function(a, b) {
+        switch (sortBy) {
+          case 'discount-desc':
+            return parseInt(b.dataset.discount) - parseInt(a.dataset.discount);
+          case 'price-asc':
+            return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
+          case 'price-desc':
+            return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
+          case 'name-asc':
+            return a.dataset.name.localeCompare(b.dataset.name);
+          default:
+            return 0;
+        }
+      });
+
+      // 3. Hide all, then re-insert visible in sorted order
+      allCards.forEach(function(card) { card.style.display = 'none'; });
+      visible.forEach(function(card)  { card.style.display = ''; grid.appendChild(card); });
+
+      // 4. Update results info
+      document.getElementById('results-info').textContent =
+        'Showing ' + visible.length + ' of ' + allCards.length + ' vehicles';
+
+      // 5. No-results message
+      document.getElementById('no-results').style.display =
+        visible.length === 0 ? 'flex' : 'none';
+    }
+
+    function resetFilters() {
+      document.getElementById('filter-brand').value        = 'all';
+      document.getElementById('filter-availability').value = 'all';
+      document.getElementById('filter-discount').value     = '0';
+      document.getElementById('sort-by').value             = 'default';
+      applyFilters();
+    }
+
+    // Bind change events
+    ['filter-brand', 'filter-availability', 'filter-discount', 'sort-by'].forEach(function(id) {
+      document.getElementById(id).addEventListener('change', applyFilters);
+    });
+    document.getElementById('reset-filters').addEventListener('click', resetFilters);
+
+    // Run on load to set initial results count
+    applyFilters();
+
+
+    // ================================================
+    // FAVORITES TOGGLE
+    // ================================================
+    function toggleFavorite(carId, e) {
+      fetch('/api/favorite/toggle/' + carId, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin'
+      })
+      .then(function(response) {
+        if (response.status === 401) {
+          window.location.href = '{{ url_for("login") }}';
+          return null;
+        }
+        return response.json();
+      })
+      .then(function(data) {
+        if (!data) return;
+        var btn   = (e ? e.target : event.target).closest('.favorite-btn');
+        var heart = btn.querySelector('.heart-icon');
+        heart.textContent = data.status === 'added' ? '♥' : '♡';
+      })
+      .catch(function(err) { console.error('Favorite error:', err); });
+    }
+
+
+    // ================================================
+    // CART BADGE
+    // ================================================
+    {% if current_user.is_authenticated %}
+    fetch('/api/cart/count')
+      .then(function(r)  { return r.json(); })
+      .then(function(data) {
+        var badge = document.getElementById('cart-badge');
+        if (badge && data.count > 0) {
+          badge.textContent = data.count;
+          badge.style.display = 'inline-block';
+        }
+      })
+      .catch(function(err) { console.error('Cart badge error:', err); });
+    {% endif %}
+  </script>
+</body>
+</html>
