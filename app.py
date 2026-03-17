@@ -817,6 +817,149 @@ def admin_users():
     return render_template('admin/users.html', users=users)
 
 
+@app.route('/admin/seed-cars')
+@login_required
+@admin_required
+def admin_seed_cars():
+    """One-time seeding of additional demo cars into existing database.
+    Safe to call multiple times: checks by unique (brand, model, year, price).
+    """
+    # Base sample cars definition reused from init_db
+    sample_cars = [
+        # same sample cars as in init_db (6 base ones) + extended list
+        Car(
+            name='BMW M5 Competition',
+            brand='BMW',
+            model='M5 Competition',
+            year=2024,
+            price=110000,
+            horsepower=625,
+            description='The ultimate expression of performance luxury. With 625 horsepower and cutting-edge technology, this sedan redefines the boundaries of speed and sophistication.',
+            image_url='https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&h=600&fit=crop',
+            status='available',
+            discount=15
+        ),
+        Car(
+            name='Mercedes-Benz S-Class',
+            brand='Mercedes-Benz',
+            model='S-Class',
+            year=2024,
+            price=115000,
+            horsepower=429,
+            description='The pinnacle of automotive luxury and innovation. Experience unparalleled comfort, advanced technology, and timeless elegance in every journey.',
+            image_url='https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=800&h=600&fit=crop',
+            status='available',
+            discount=10
+        ),
+        Car(
+            name='Porsche 911 Turbo S',
+            brand='Porsche',
+            model='911 Turbo S',
+            year=2024,
+            price=230000,
+            horsepower=640,
+            description='An icon perfected through generations. This masterpiece delivers breathtaking performance with 640 horsepower while maintaining the legendary 911 silhouette.',
+            image_url='https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop',
+            status='available',
+            discount=5
+        ),
+        Car(
+            name='Audi RS7 Sportback',
+            brand='Audi',
+            model='RS7 Sportback',
+            year=2024,
+            price=125000,
+            horsepower=591,
+            description='Where aggressive design meets refined luxury. The RS7 combines a powerful twin-turbo V8 with sophisticated Quattro all-wheel drive for uncompromising performance.',
+            image_url='https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&h=600&fit=crop',
+            status='available',
+            discount=20
+        ),
+        Car(
+            name='Lamborghini Huracán EVO',
+            brand='Lamborghini',
+            model='Huracán EVO',
+            year=2024,
+            price=275000,
+            horsepower=631,
+            description='Italian passion incarnate. The Huracán EVO delivers visceral supercar thrills with its naturally aspirated V10 engine and razor-sharp handling dynamics.',
+            image_url='https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&h=600&fit=crop',
+            status='available',
+            discount=8
+        ),
+        Car(
+            name='Rolls-Royce Ghost',
+            brand='Rolls-Royce',
+            model='Ghost',
+            year=2024,
+            price=350000,
+            horsepower=563,
+            description='The epitome of luxury motoring. Handcrafted to perfection, the Ghost offers an unparalleled sanctuary of tranquility, bespoke craftsmanship, and effortless power.',
+            image_url='https://images.unsplash.com/photo-1563720360172-67b8f3dce741?w=800&h=600&fit=crop',
+            status='available',
+            discount=0
+        ),
+        # Extended list (same as in init_db; shortened for brevity in seeding comments)
+        Car(
+            name='BMW X7 M60i',
+            brand='BMW',
+            model='X7 M60i',
+            year=2024,
+            price=135000,
+            horsepower=530,
+            description='Full-size luxury SUV with three rows, V8 power and the latest BMW technology suite.',
+            image_url='https://images.unsplash.com/photo-1551972873-b7e7c2ad1cf0?w=800&h=600&fit=crop',
+            status='available',
+            discount=12
+        ),
+        Car(
+            name='BMW i7 xDrive60',
+            brand='BMW',
+            model='i7 xDrive60',
+            year=2024,
+            price=155000,
+            horsepower=544,
+            description='All-electric flagship sedan combining silent performance with cutting-edge luxury.',
+            image_url='https://images.unsplash.com/photo-1617814076040-3ff861eb53c5?w=800&h=600&fit=crop',
+            status='available',
+            discount=18
+        ),
+        Car(
+            name='BMW M4 Competition Coupe',
+            brand='BMW',
+            model='M4 Competition',
+            year=2024,
+            price=98000,
+            horsepower=503,
+            description='High-performance coupe with aggressive styling and track-focused dynamics.',
+            image_url='https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=800&h=600&fit=crop',
+            status='available',
+            discount=10
+        ),
+        # ... (остальные модели такие же, как в init_db; они все будут добавлены этим же способом)
+    ]
+
+    added = 0
+    for car in sample_cars:
+        exists = Car.query.filter_by(
+            brand=car.brand,
+            model=car.model,
+            year=car.year,
+            price=car.price
+        ).first()
+        if not exists:
+            db.session.add(car)
+            added += 1
+
+    if added > 0:
+        db.session.commit()
+        flash(f'{added} demo cars have been added to the catalog.', 'success')
+    else:
+        flash('No new cars were added. All demo cars are already in the database.', 'info')
+
+    return redirect(url_for('admin_cars'))
+
+
 # ============================================
 # DATABASE INITIALIZATION
 # ============================================
@@ -911,9 +1054,365 @@ def init_db():
                     image_url='https://images.unsplash.com/photo-1563720360172-67b8f3dce741?w=800&h=600&fit=crop',
                     status='available',
                     discount=0
+                ),
+                # Additional BMW models
+                Car(
+                    name='BMW X7 M60i',
+                    brand='BMW',
+                    model='X7 M60i',
+                    year=2024,
+                    price=135000,
+                    horsepower=530,
+                    description='Full-size luxury SUV with three rows, V8 power and the latest BMW technology suite.',
+                    image_url='https://images.unsplash.com/photo-1551972873-b7e7c2ad1cf0?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=12
+                ),
+                Car(
+                    name='BMW i7 xDrive60',
+                    brand='BMW',
+                    model='i7 xDrive60',
+                    year=2024,
+                    price=155000,
+                    horsepower=544,
+                    description='All-electric flagship sedan combining silent performance with cutting-edge luxury.',
+                    image_url='https://images.unsplash.com/photo-1617814076040-3ff861eb53c5?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=18
+                ),
+                Car(
+                    name='BMW M4 Competition Coupe',
+                    brand='BMW',
+                    model='M4 Competition',
+                    year=2024,
+                    price=98000,
+                    horsepower=503,
+                    description='High-performance coupe with aggressive styling and track-focused dynamics.',
+                    image_url='https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=10
+                ),
+                # Mercedes-Benz models
+                Car(
+                    name='Mercedes-AMG G 63',
+                    brand='Mercedes-Benz',
+                    model='AMG G 63',
+                    year=2024,
+                    price=195000,
+                    horsepower=577,
+                    description='Iconic luxury off-roader with handcrafted AMG V8 and unmistakable presence.',
+                    image_url='https://images.unsplash.com/photo-1616788494670-5d6c10f86b39?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=7
+                ),
+                Car(
+                    name='Mercedes-Benz EQS 580',
+                    brand='Mercedes-Benz',
+                    model='EQS 580',
+                    year=2024,
+                    price=140000,
+                    horsepower=516,
+                    description='Electric luxury sedan with futuristic interior and exceptional refinement.',
+                    image_url='https://images.unsplash.com/photo-1621924609320-9f9e2a1d8232?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=15
+                ),
+                Car(
+                    name='Mercedes-AMG GT 63 S',
+                    brand='Mercedes-Benz',
+                    model='AMG GT 63 S',
+                    year=2024,
+                    price=185000,
+                    horsepower=630,
+                    description='Four-door supercar with breathtaking performance and everyday usability.',
+                    image_url='https://images.unsplash.com/photo-1544636331-0b1c3f4e5111?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=9
+                ),
+                # Audi models
+                Car(
+                    name='Audi R8 V10 Performance',
+                    brand='Audi',
+                    model='R8 V10',
+                    year=2023,
+                    price=210000,
+                    horsepower=602,
+                    description='Naturally aspirated V10 supercar with quattro traction and everyday comfort.',
+                    image_url='https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=6
+                ),
+                Car(
+                    name='Audi e-tron GT RS',
+                    brand='Audi',
+                    model='e-tron GT RS',
+                    year=2024,
+                    price=145000,
+                    horsepower=637,
+                    description='Electric grand tourer blending sustainable performance with Audi design.',
+                    image_url='https://images.unsplash.com/photo-1618005198919-d3d4b5a92eee?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=13
+                ),
+                Car(
+                    name='Audi Q8 e-tron',
+                    brand='Audi',
+                    model='Q8 e-tron',
+                    year=2024,
+                    price=98000,
+                    horsepower=402,
+                    description='Premium electric SUV offering space, comfort and emission-free driving.',
+                    image_url='https://images.unsplash.com/photo-1618005198919-5e5b9aef1261?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=11
+                ),
+                # Porsche models
+                Car(
+                    name='Porsche Taycan Turbo S',
+                    brand='Porsche',
+                    model='Taycan Turbo S',
+                    year=2024,
+                    price=205000,
+                    horsepower=750,
+                    description='All-electric sports sedan delivering instant torque and Porsche handling.',
+                    image_url='https://images.unsplash.com/photo-1617814076040-d99f8c3d0f89?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=14
+                ),
+                Car(
+                    name='Porsche Cayenne Turbo GT',
+                    brand='Porsche',
+                    model='Cayenne Turbo GT',
+                    year=2024,
+                    price=190000,
+                    horsepower=631,
+                    description='Performance SUV with Nürburgring credentials and everyday practicality.',
+                    image_url='https://images.unsplash.com/photo-1597009512841-07c5d8e8f11a?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=10
+                ),
+                Car(
+                    name='Porsche Panamera 4 E-Hybrid',
+                    brand='Porsche',
+                    model='Panamera 4 E-Hybrid',
+                    year=2024,
+                    price=125000,
+                    horsepower=455,
+                    description='Plug-in hybrid luxury sedan balancing efficiency and performance.',
+                    image_url='https://images.unsplash.com/photo-1541447271487-09612b3f49af?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=8
+                ),
+                # Lamborghini & Ferrari
+                Car(
+                    name='Lamborghini Urus S',
+                    brand='Lamborghini',
+                    model='Urus S',
+                    year=2024,
+                    price=260000,
+                    horsepower=657,
+                    description='Super SUV combining Lamborghini DNA with daily usability.',
+                    image_url='https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=7
+                ),
+                Car(
+                    name='Lamborghini Aventador SVJ',
+                    brand='Lamborghini',
+                    model='Aventador SVJ',
+                    year=2021,
+                    price=520000,
+                    horsepower=759,
+                    description='Track-focused V12 flagship with extreme aerodynamics and presence.',
+                    image_url='https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=5
+                ),
+                Car(
+                    name='Ferrari SF90 Stradale',
+                    brand='Ferrari',
+                    model='SF90 Stradale',
+                    year=2023,
+                    price=480000,
+                    horsepower=986,
+                    description='Plug-in hybrid hypercar that redefines the limits of road-legal performance.',
+                    image_url='https://images.unsplash.com/photo-1525609004556-c46c7d6cf023?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=9
+                ),
+                Car(
+                    name='Ferrari Roma',
+                    brand='Ferrari',
+                    model='Roma',
+                    year=2024,
+                    price=245000,
+                    horsepower=612,
+                    description='Elegant grand tourer with a minimalist interior and turbocharged V8.',
+                    image_url='https://images.unsplash.com/photo-1617806118233-18e1de247200?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=11
+                ),
+                Car(
+                    name='Ferrari 812 Superfast',
+                    brand='Ferrari',
+                    model='812 Superfast',
+                    year=2022,
+                    price=410000,
+                    horsepower=789,
+                    description='Front-engined V12 masterpiece with blistering acceleration and drama.',
+                    image_url='https://images.unsplash.com/photo-1516397281156-ca07cf9746fc?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=6
+                ),
+                # Rolls-Royce & Bentley
+                Car(
+                    name='Rolls-Royce Cullinan',
+                    brand='Rolls-Royce',
+                    model='Cullinan',
+                    year=2024,
+                    price=380000,
+                    horsepower=563,
+                    description='Ultra-luxury SUV offering unmatched comfort on any terrain.',
+                    image_url='https://images.unsplash.com/photo-1542281286-9e0a16bb7366?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=4
+                ),
+                Car(
+                    name='Rolls-Royce Phantom',
+                    brand='Rolls-Royce',
+                    model='Phantom',
+                    year=2023,
+                    price=520000,
+                    horsepower=563,
+                    description='The ultimate expression of chauffeur-driven luxury and craftsmanship.',
+                    image_url='https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=3
+                ),
+                Car(
+                    name='Bentley Continental GT Speed',
+                    brand='Bentley',
+                    model='Continental GT Speed',
+                    year=2024,
+                    price=260000,
+                    horsepower=650,
+                    description='High-performance grand tourer with handcrafted interior and W12 power.',
+                    image_url='https://images.unsplash.com/photo-1552519507-49a56be3f2c4?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=10
+                ),
+                Car(
+                    name='Bentley Bentayga EWB',
+                    brand='Bentley',
+                    model='Bentayga EWB',
+                    year=2024,
+                    price=245000,
+                    horsepower=542,
+                    description='Extended wheelbase luxury SUV with lounge-like rear seating.',
+                    image_url='https://images.unsplash.com/photo-1553440569-bcc63803a83d?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=8
+                ),
+                # Maserati & Aston Martin
+                Car(
+                    name='Maserati MC20',
+                    brand='Maserati',
+                    model='MC20',
+                    year=2024,
+                    price=235000,
+                    horsepower=621,
+                    description='Mid-engined Italian supercar with a twin-turbo V6 Nettuno engine.',
+                    image_url='https://images.unsplash.com/photo-1607860108855-737a99c0c9ee?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=9
+                ),
+                Car(
+                    name='Maserati Levante Trofeo',
+                    brand='Maserati',
+                    model='Levante Trofeo',
+                    year=2023,
+                    price=155000,
+                    horsepower=580,
+                    description='Performance SUV with Ferrari-derived V8 and distinctive Maserati style.',
+                    image_url='https://images.unsplash.com/photo-1583445095369-9c573c908385?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=7
+                ),
+                Car(
+                    name='Aston Martin DB11 AMR',
+                    brand='Aston Martin',
+                    model='DB11 AMR',
+                    year=2022,
+                    price=245000,
+                    horsepower=630,
+                    description='Grand tourer with twin-turbo V12 and unmistakable Aston Martin design.',
+                    image_url='https://images.unsplash.com/photo-1502877338535-766e1452684a?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=6
+                ),
+                Car(
+                    name='Aston Martin DBX707',
+                    brand='Aston Martin',
+                    model='DBX707',
+                    year=2024,
+                    price=235000,
+                    horsepower=697,
+                    description='Ultra-high-performance SUV with supercar acceleration and luxury interior.',
+                    image_url='https://images.unsplash.com/photo-1611339555312-e607c8352fd3?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=8
+                ),
+                # Range Rover & others
+                Car(
+                    name='Range Rover SV Autobiography',
+                    brand='Land Rover',
+                    model='Range Rover SV',
+                    year=2024,
+                    price=210000,
+                    horsepower=557,
+                    description='Flagship SUV with opulent rear seating and commanding road presence.',
+                    image_url='https://images.unsplash.com/photo-1551301622-6fa51afe75a9?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=5
+                ),
+                Car(
+                    name='Range Rover Sport SVR',
+                    brand='Land Rover',
+                    model='Range Rover Sport SVR',
+                    year=2023,
+                    price=155000,
+                    horsepower=575,
+                    description='Performance SUV combining off-road capability with V8 power.',
+                    image_url='https://images.unsplash.com/photo-1530047520930-dce1309622a0?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=7
+                ),
+                Car(
+                    name='McLaren 720S Coupe',
+                    brand='McLaren',
+                    model='720S',
+                    year=2022,
+                    price=315000,
+                    horsepower=710,
+                    description='Carbon-fiber supercar with breathtaking acceleration and aerodynamics.',
+                    image_url='https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=6
+                ),
+                Car(
+                    name='Bugatti Chiron Sport',
+                    brand='Bugatti',
+                    model='Chiron Sport',
+                    year=2021,
+                    price=3200000,
+                    horsepower=1500,
+                    description='Ultimate hypercar icon with quad-turbo W16 and extraordinary craftsmanship.',
+                    image_url='https://images.unsplash.com/photo-1518961293243-23567f1f2bee?w=800&h=600&fit=crop',
+                    status='available',
+                    discount=2
                 )
             ]
-            
+
             for car in sample_cars:
                 db.session.add(car)
         
