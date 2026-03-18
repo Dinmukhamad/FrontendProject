@@ -236,6 +236,16 @@ def car_detail(car_id):
     return render_template('car_detail.html', car=car, is_favorite=is_favorite)
 
 
+@app.route('/admin/seed-now')
+@login_required
+@admin_required
+def seed_now():
+    from app import init_db
+    init_db()
+    count = Car.query.count()
+    return f"Done! Cars in DB: {count}"
+
+
 # ============================================
 # ROUTES - AUTHENTICATION
 # ============================================
