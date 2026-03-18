@@ -1653,7 +1653,7 @@ def init_db():
             db.session.add(admin)
         
         # Add sample cars if database is empty
-        if Car.query.count() == 0:
+        if True:
             sample_cars = [
                 Car(
                     name='BMW M5 Competition',
